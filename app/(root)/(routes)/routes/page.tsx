@@ -1,6 +1,7 @@
 import prismadb from '@/lib/prismadb'
 import { RouteClient } from './components/client'
 import { RouteColumn } from './components/columns'
+import { format } from 'date-fns'
 
 const RoutesPage = async () => {
 
@@ -12,12 +13,16 @@ const RoutesPage = async () => {
 
     const formattedRoutes: RouteColumn[] = routes.map(item => ({
         id: item.id,
-        day: item.day,
+        day: format(item.day,"PPP"),
         startCityId: item.startCityId,
         endCityId: item.endCityId,
         price: item.price,
-        busMatrixId: item.busMatrixId,
-        createdAt: item.createdAt,
+        
+        totalSeats: item.totalSeats,
+        emptySeats: item.emptySeats,
+        occupiedSeats: item.occupiedSeats,
+
+        createdAt: format(item.createdAt,"PPP"),
     }));
 
     return (

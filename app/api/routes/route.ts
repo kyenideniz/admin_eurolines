@@ -1,14 +1,6 @@
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
 
-const initialMatrix = [
-    [{ id: "J1", status: 0 }, { id: "I1", status: 0 }, { id: "H1", status: 0 }, { id: "G1", status: 0 }, { id: "F1", status: 0 }, { id: "E1", status: 0 }, { id: "D1", status: 0 }, { id: "C1", status: 0 }, { id: "B1", status: 0 }, { id: "A1", status: 0 }],
-    [{ id: "J2", status: 0 }, { id: "I2", status: 0 }, { id: "H2", status: 0 }, { id: "G2", status: 0 }, { id: "F2", status: 0 }, { id: "E2", status: 0 }, { id: "D2", status: 0 }, { id: "C2", status: 0 }, { id: "B2", status: 0 }, { id: "A2", status: 0 }],
-    [{ id: "J3", status: 0 }],
-    [{ id: "J4", status: 0 }, { id: "I3", status: 0 }, { id: "H3", status: 0 }, { id: "G3", status: 0 }, { id: "F3", status: 0 }, { id: "E3", status: 0 }, { id: "D3", status: 0 }, { id: "C3", status: 0 }, { id: "B3", status: 0 }, { id: "A3", status: 0 }],
-    [{ id: "J5", status: 0 }, { id: "I4", status: 0 }, { id: "H4", status: 0 }, { id: "G4", status: 0 }, { id: "F4", status: 0 }, { id: "E4", status: 0 }, { id: "D4", status: 0 }, { id: "C4", status: 0 }, { id: "B4", status: 0 }, { id: "A4", status: 0 }],
-];
-
 export async function POST(
     req: Request,
     { params }: { params: { storeId: string } }
@@ -36,24 +28,6 @@ export async function POST(
         if (!price) {
             return new NextResponse("Price is required", { status: 400});
         }
-        console.log("not created")
-
-        const matrix = await prismadb.busMatrix.create({
-            data: {
-              rows: {
-                create: initialMatrix.map(row => ({
-                  items: {
-                    create: row.map(item => ({
-                      status: item.status,
-                      id: Math.random().toString(),
-                    })),
-                  },
-                })),
-              },
-            },
-        });
-
-        console.log("matrix created", matrix.id)
         
         const route = await prismadb.route.create({
             data : {
@@ -61,7 +35,9 @@ export async function POST(
                 startCityId,
                 endCityId,
                 price,
-                busMatrix: { connect: { id: matrix.id } }, // Connect to the busMatrix
+                totalSeats: 55,
+                emptySeats: 55,
+                occupiedSeats: 0,
             }
         })
 

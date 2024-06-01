@@ -1,5 +1,5 @@
 import prismadb from "@/lib/prismadb";
-import { RouteForm } from "./components/city-form";
+import { RouteForm } from "./components/route-form";
 
 const RoutePage = async ({ params }: { params: { routeId: string } }) => {
     const route = await prismadb.route.findUnique({ 

@@ -8,62 +8,43 @@ datasource db {
 }
 
 model Route {
-  id          String      @id @default(uuid())
-  day         DateTime
+  id              String      @id @default(uuid())
+  day             DateTime
 
-  startCityId String
-  //startCity   City        @relation("StartCity", fields: [startCityId], references: [id])
-  endCityId   String
-  //endCity     City        @relation("EndCity", fields: [endCityId], references: [id])
+  startCityId     String
+  //startCity     City        @relation("StartCity", fields: [startCityId], references: [id])
+  endCityId       String
+  //endCity       City        @relation("EndCity", fields: [endCityId], references: [id])
   
-  stops       RouteStops[]
+  stops           RouteStops[]
 
-  price       Float
+  price           Float
 
-  busMatrixId Int         @unique
-  busMatrix   BusMatrix   @relation(fields: [busMatrixId], references: [id])
+  totalSeats      Int
+  emptySeats      Int
+  occupiedSeats   Int
 
-  createdAt   DateTime    @default(now())
+  createdAt       DateTime    @default(now())
 }
 
 model City {
-  id          String      @id @default(uuid())
-  name        String
-  value       String
+  id              String      @id @default(uuid())
+  name            String
+  value           String
 
   //routesAsStart Route[]   @relation("StartCity")
   //routesAsEnd   Route[]   @relation("EndCity")
-  stops         RouteStops[]
+  stops           RouteStops[]
 
-  createdAt    DateTime   @default(now())
+  createdAt       DateTime   @default(now())
 }
 
 model RouteStops {
-  id          String      @id @default(uuid())
-  routeId     String
-  route       Route       @relation(fields: [routeId], references: [id])
-  cityId      String
-  city        City        @relation(fields: [cityId], references: [id])
+  id              String      @id @default(uuid())
+  routeId         String
+  route           Route       @relation(fields: [routeId], references: [id])
+  cityId          String
+  city            City        @relation(fields: [cityId], references: [id])
 
-  createdAt   DateTime    @default(now())
-}
-
-model BusMatrixItem {
-  id        String        @id
-  status    Int
-  rowId     Int
-  row       BusMatrixRow  @relation(fields: [rowId], references: [id])
-}
-
-model BusMatrixRow {
-  id        Int           @id @default(autoincrement())
-  matrixId  Int
-  items     BusMatrixItem[]
-  matrix    BusMatrix     @relation(fields: [matrixId], references: [id])
-}
-
-model BusMatrix {
-  id        Int           @id @default(autoincrement())
-  rows      BusMatrixRow[]
-  route     Route?
+  createdAt       DateTime    @default(now())
 }
