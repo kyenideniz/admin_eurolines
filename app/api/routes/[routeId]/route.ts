@@ -75,17 +75,17 @@ export async function PATCH (
 
 export async function DELETE (
     req: Request,
-    { params }: { params: { cityId: string }}
+    { params }: { params: { routeId: string }}
 ) {
     try {
 
-        if(!params.cityId) {
-            return new NextResponse("City id is required", { status: 400 });
+        if(!params.routeId) {
+            return new NextResponse("Route id is required", { status: 400 });
         }
 
         const city = await prismadb.city.deleteMany({
             where: {
-                id: params.cityId,
+                id: params.routeId,
             }
         })
 

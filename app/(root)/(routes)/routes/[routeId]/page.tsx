@@ -8,10 +8,16 @@ const RoutePage = async ({ params }: { params: { routeId: string } }) => {
         }
     });
 
+    const cities = await prismadb.city.findMany({
+        orderBy: {
+            createdAt: 'desc'
+        }
+    })
+
     return (
         <div className="flex-col">
             <div className="flex-1 p-8 pt-6 space-y-4">
-                <RouteForm initialData={route} />
+                <RouteForm initialData={route} cities={cities} />
             </div>
         </div>
     )

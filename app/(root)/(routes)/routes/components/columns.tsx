@@ -5,8 +5,9 @@ import { CellAction } from './cell-action';
 export type RouteColumn = {
     id: string
     day: string,
-    startCityId: string,
-    endCityId: string,
+    time: string,
+    startCity: string,
+    endCity: string,
     price: number,
     totalSeats: number,
     emptySeats: number,
@@ -16,12 +17,12 @@ export type RouteColumn = {
 
 export const columns: ColumnDef<RouteColumn>[] = [
     {
-        accessorKey: 'startCityId',
-        header: 'Start City Id',
+        accessorKey: 'startCity',
+        header: 'Start City',
     },
     {
-        accessorKey: 'endCityId',
-        header: 'End City Id',
+        accessorKey: 'endCity',
+        header: 'End City',
     },
     {
         accessorKey: 'totalSeats',
@@ -42,6 +43,10 @@ export const columns: ColumnDef<RouteColumn>[] = [
     {
         accessorKey: 'day',
         header: 'Day',
+    },
+    {
+        accessorKey: 'time',
+        header: 'Departure Time',
     },
     {
         accessorKey: 'createdAt',

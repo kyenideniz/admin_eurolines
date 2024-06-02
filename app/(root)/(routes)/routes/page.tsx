@@ -6,6 +6,10 @@ import { format } from 'date-fns'
 const RoutesPage = async () => {
 
     const routes = await prismadb.route.findMany({
+        include: {
+            startCity: true,
+            endCity: true,
+        },
         orderBy: {
             createdAt: 'desc'
         }
@@ -14,9 +18,10 @@ const RoutesPage = async () => {
     const formattedRoutes: RouteColumn[] = routes.map(item => ({
         id: item.id,
         day: format(item.day,"PPP"),
-        startCityId: item.startCityId,
-        endCityId: item.endCityId,
-        price: item.price,
+        time: format(item.day, "p"),
+        startCity: item.startCity.value,
+        endCity: item.endCity.value,
+        price: Number(item.price),
         
         totalSeats: item.totalSeats,
         emptySeats: item.emptySeats,

@@ -113,21 +113,19 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
                             </FormItem>
                         )}
                     />
-                    <div className='grid grid-cols-3 gap-8'>
-                        <FormField
-                            control={form.control} 
-                            name="value"
-                            render={({field}) => (
-                                <FormItem>
-                                    <FormLabel>City Value</FormLabel>
-                                    <FormControl>
-                                        <Input disabled={loading} placeholder='City value' {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
+                    <FormField
+                        control={form.control} 
+                        name="value"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormLabel>City Value</FormLabel>
+                                <FormControl>
+                                    <Input disabled={loading} placeholder='City value' {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <Button disabled={loading} className='ml-auto' type='submit'>{action}</Button>
                 </form>
             </Form>

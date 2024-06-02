@@ -1,10 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider =      "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql" // or any other database provider you use
-  url      = env("DATABASE_URL")
+  provider =      "postgresql" // or any other database provider you use
+  url      =      env("DATABASE_URL")
 }
 
 model Route {
@@ -12,9 +12,9 @@ model Route {
   day             DateTime
 
   startCityId     String
-  //startCity     City        @relation("StartCity", fields: [startCityId], references: [id])
+  startCity       City        @relation("StartCity", fields: [startCityId], references: [id])
   endCityId       String
-  //endCity       City        @relation("EndCity", fields: [endCityId], references: [id])
+  endCity         City        @relation("EndCity", fields: [endCityId], references: [id])
   
   stops           RouteStops[]
 
@@ -25,6 +25,9 @@ model Route {
   occupiedSeats   Int
 
   createdAt       DateTime    @default(now())
+
+  @@index([endCityId])
+  @@index([startCityId])
 }
 
 model City {
@@ -32,8 +35,8 @@ model City {
   name            String
   value           String
 
-  //routesAsStart Route[]   @relation("StartCity")
-  //routesAsEnd   Route[]   @relation("EndCity")
+  routesAsStart   Route[]   @relation("StartCity")
+  routesAsEnd     Route[]   @relation("EndCity")
   stops           RouteStops[]
 
   createdAt       DateTime   @default(now())
