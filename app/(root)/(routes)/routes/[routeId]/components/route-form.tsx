@@ -34,9 +34,9 @@ const formSchema = z.object({
     endCityId: z.string().min(1),
     price: z.coerce.number().min(1),
     stops: z.array(z.object({
-        id: z.string(),  // Optional for new stops
+        id: z.string().min(1),
         cityId: z.string().min(1),
-    })),
+    })).min(1),
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
@@ -51,8 +51,6 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
 
     const params = useParams();
     const router = useRouter();
-
-    const defaultStops = [{ id: uuidv4(), cityId: uuidv4() }];
 
     const title = initialData ? 'Edit Route' : 'Add Route';
     const description = initialData ? 'Edit a Route' : 'Add a new route';
@@ -71,7 +69,7 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
             startCityId: '',
             endCityId: '',
             price: 1,
-            stops: defaultStops,
+            stops: [],
         }
     });
 
@@ -82,10 +80,6 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
         // Ensure that there is always at least one element in the array
         shouldUnregister: false,
     });
-
-    if (fields.length === 0) {
-        append(defaultStops[0]);
-    }
 
     const onSubmit = async (data: RouteFormValues) => {
         try {
