@@ -31,7 +31,7 @@ export const RouteClient: React.FC<RouteClientProps> = ({
                 </Button>
             </div>
             <Separator />
-            <DataTable columns={columns} data={data} searchKey="startCityId" />
+            <DataTable columns={columns} data={data} searchKey="startCity" />
             <Heading title="API" description="API calls for Routes" />
             <Separator />
             <ApiList entityName="routes" entityIdName="routeId" />

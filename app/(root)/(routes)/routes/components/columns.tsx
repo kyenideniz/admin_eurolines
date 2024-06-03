@@ -13,6 +13,7 @@ export type RouteColumn = {
     emptySeats: number,
     occupiedSeats: number,
     createdAt: string,
+    stops: Array<string>,
 }
 
 export const columns: ColumnDef<RouteColumn>[] = [
@@ -23,6 +24,10 @@ export const columns: ColumnDef<RouteColumn>[] = [
     {
         accessorKey: 'endCity',
         header: 'End City',
+    },
+    {
+        accessorKey: 'stops',
+        header: 'Stops',
     },
     {
         accessorKey: 'totalSeats',

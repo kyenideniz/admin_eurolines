@@ -3,15 +3,16 @@
 import React from 'react';
 import { useState } from 'react'
 import * as z from 'zod'
-import { City, Route } from "@prisma/client";
+import { v4 as uuidv4 } from 'uuid';
+import { City, Route, RouteStop } from "@prisma/client";
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Trash } from "lucide-react";
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input, InputProps } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useParams, useRouter } from 'next/navigation';
@@ -22,9 +23,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-
 interface SettingsFromProps {
-    initialData: Route | null; 
+    initialData: (Route & { stops: RouteStop[] }) | null;  
     cities: City[],
 }
 
@@ -33,6 +33,10 @@ const formSchema = z.object({
     startCityId: z.string().min(1),
     endCityId: z.string().min(1),
     price: z.coerce.number().min(1),
+    stops: z.array(z.object({
+        id: z.string(),  // Optional for new stops
+        cityId: z.string().min(1),
+    })),
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
@@ -48,6 +52,8 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
     const params = useParams();
     const router = useRouter();
 
+    const defaultStops = [{ id: uuidv4(), cityId: uuidv4() }];
+
     const title = initialData ? 'Edit Route' : 'Add Route';
     const description = initialData ? 'Edit a Route' : 'Add a new route';
     const toastMessage = initialData ? 'Route updated.' : 'Route created.';
@@ -57,14 +63,29 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
         resolver: zodResolver(formSchema),
         defaultValues: initialData ? {
             ...initialData,
-            price: parseFloat(String(initialData?.price))
+            day: dayjs(initialData.day),
+            price: parseFloat(String(initialData.price)),
+            stops: initialData.stops.map(stop => ({ id: stop.id, cityId: stop.cityId })),
         } : {
             day: dayjs(new Date()),
             startCityId: '',
             endCityId: '',
             price: 1,
+            stops: defaultStops,
         }
     });
+
+    // Use the form hook with the default stops
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: 'stops',
+        // Ensure that there is always at least one element in the array
+        shouldUnregister: false,
+    });
+
+    if (fields.length === 0) {
+        append(defaultStops[0]);
+    }
 
     const onSubmit = async (data: RouteFormValues) => {
         try {
@@ -189,6 +210,48 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
                         )}
                     />
                     </div>
+                    <div className="space-y-4">
+                        <FormLabel>Stops</FormLabel>
+                        {fields.map((item, index) => (
+                            <div key={item.id} className="flex items-center space-x-4">
+                                <FormField
+                                    control={form.control}
+                                    name={`stops.${index}.cityId`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <Select
+                                                disabled={loading}
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                defaultValue={field.value}
+                                            >
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select a stop city" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {cities && cities.map(city => (
+                                                        <SelectItem key={city.id} value={city.id}>
+                                                            {city.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="button" variant="destructive" onClick={() => remove(index)} disabled={loading}>
+                                    Remove
+                                </Button>
+                            </div>
+                        ))}
+                        <Button type="button" onClick={() => append({ id: uuidv4(), cityId: "0" })} disabled={loading}>
+                            Add Stop
+                        </Button>
+                    </div>
+
                     <FormField
                         control={form.control}
                         name="price"
@@ -217,7 +280,6 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
                                             ampm={false}
                                             disablePast={true}
                                             views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-                                
                                         />
                                     </LocalizationProvider>
                                 </FormControl>

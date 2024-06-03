@@ -1,36 +1,18 @@
 import { NextResponse } from "next/server";
 import prismadb from "@/lib/prismadb";
+import { v4 as uuidv4 } from 'uuid';
 
-export async function POST(
-    req: Request,
-    { params }: { params: { storeId: string } }
-) {
+export async function POST(req: Request) {
     try {
-        //const { userId } = auth();
         const body = await req.json();
+        const { day, startCityId, endCityId, price, stops } = body;
 
-        const { day, startCityId, endCityId, price } = body; 
-
-        /*if (!userId) {
-            return new NextResponse("Unauthenticated", { status: 401 });
-        }*/
-
-        if (!day) {
-            return new NextResponse("Date is required", { status: 400});
+        if (!day || !startCityId || !endCityId || !price) {
+            return new NextResponse("Invalid data provided", { status: 400 });
         }
 
-        if (!startCityId) {
-            return new NextResponse("Departure City is required", { status: 400});
-        }
-        if (!endCityId) {
-            return new NextResponse("Return City is required", { status: 400});
-        }
-        if (!price) {
-            return new NextResponse("Price is required", { status: 400});
-        }
-        
-        const route = await prismadb.route.create({
-            data : {
+        const newRoute = await prismadb.route.create({
+            data: {
                 day,
                 startCityId,
                 endCityId,
@@ -38,16 +20,27 @@ export async function POST(
                 totalSeats: 55,
                 emptySeats: 55,
                 occupiedSeats: 0,
-            }
-        })
+                stops: {
+                    createMany: {
+                        data: stops.map((stop: any) => ({
+                            id: stop.cityId === 'N/A' ? uuidv4() : stop.id,
+                            cityId: stop.cityId === 'N/A' ? null : stop.cityId,
+                        })),
+                    },
+                },
+            },
+            include: {
+                stops: true,
+            },
+        });
 
-        return NextResponse.json(route);
-
+        return NextResponse.json(newRoute);
     } catch (err) {
-        console.log(`[ROUTE_POST] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500})
+        console.log('[ROUTE_POST]', err);
+        return new NextResponse('Internal error', { status: 500 });
     }
 }
+
 
 export async function GET(
     req: Request,
@@ -64,6 +57,6 @@ export async function GET(
 
     } catch (err) {
         console.log(`[ROUTES_GET] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500})
+        return new NextResponse(`Internal error`, { status: 500});
     }
 }

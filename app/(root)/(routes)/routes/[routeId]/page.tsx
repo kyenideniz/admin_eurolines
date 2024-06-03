@@ -4,8 +4,11 @@ import { RouteForm } from "./components/route-form";
 const RoutePage = async ({ params }: { params: { routeId: string } }) => {
     const route = await prismadb.route.findUnique({ 
         where: {
-            id: params.routeId
-        }
+            id: params.routeId,
+        },
+        include: {
+            stops: true,
+        },
     });
 
     const cities = await prismadb.city.findMany({
@@ -13,6 +16,8 @@ const RoutePage = async ({ params }: { params: { routeId: string } }) => {
             createdAt: 'desc'
         }
     })
+
+    const stops = route?.stops || [];
 
     return (
         <div className="flex-col">
