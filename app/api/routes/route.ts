@@ -41,22 +41,43 @@ export async function POST(req: Request) {
     }
 }
 
-
-export async function GET(
-    req: Request,
-    { params }: { params: { id: string } }
-) {
+export async function GET(req: Request) {
     try {
         const routes = await prismadb.route.findMany({
-            where: {
-                id: params.id
-            }
-        })
+            include: {
+                startCity: true,
+                endCity: true,
+                stops: {
+                    include: {
+                        city: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
 
-        return NextResponse.json(routes);
+        const formattedRoutes = routes.map((item) => ({
+            id: item.id,
+            day: item.day,
+            time: item.day,
+            startCity: item.startCity.name,
+            endCity: item.endCity.name,
+            stops: item.stops.map((stop) => stop.city.name),
+            price: Number(item.price),
+            totalSeats: item.totalSeats,
+            emptySeats: item.emptySeats,
+            occupiedSeats: item.occupiedSeats,
+            createdAt: item.createdAt,
+        }));
 
-    } catch (err) {
-        console.log(`[ROUTES_GET] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500});
+        console.log('Routes fetched:', formattedRoutes);
+        return NextResponse.json(formattedRoutes);
+
+    } catch (err:any) {
+        console.error(`[ROUTES_GET] Error: ${err.message}`);
+        console.error(`[ROUTES_GET] Stack: ${err.stack}`);
+        return new NextResponse('Internal error', { status: 500 });
     }
 }
