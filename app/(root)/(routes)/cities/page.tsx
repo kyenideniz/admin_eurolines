@@ -3,6 +3,8 @@ import prismadb from '@/lib/prismadb'
 import { CityClient } from './components/client'
 import { CityColumn } from './components/columns'
 
+export const revalidate = 0;
+
 const CitiesPage = async () => {
 
     const cities = await prismadb.city.findMany({
