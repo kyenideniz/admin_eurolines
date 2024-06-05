@@ -4,7 +4,7 @@ import React from 'react';
 import { useState } from 'react'
 import * as z from 'zod'
 import { v4 as uuidv4 } from 'uuid';
-import { City, Route, RouteStop } from "@prisma/client";
+import { City, Route, Stop as RouteStop } from "@prisma/client";
 import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
