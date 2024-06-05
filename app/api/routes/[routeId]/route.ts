@@ -55,7 +55,7 @@ export async function PATCH(
         const existingStopIds = existingStops ? existingStops.stops.map((stop) => stop.id) : [];
 
         if (stops.length === 0) {
-            await prismadb.routeStop.deleteMany({
+            await prismadb.stop.deleteMany({
                 where: {
                     routeId: params.routeId,
                 },
@@ -65,7 +65,7 @@ export async function PATCH(
                 return !stops.some((newStop: { id: string; }) => newStop.id === existingStopId);
             });
 
-            await prismadb.routeStop.deleteMany({
+            await prismadb.stop.deleteMany({
                 where: {
                     id: {
                         in: stopsToDelete,
@@ -121,7 +121,7 @@ export async function DELETE (
         }
 
         // Delete related records in RouteStop table
-        await prismadb.routeStop.deleteMany({
+        await prismadb.stop.deleteMany({
             where: {
                 routeId: params.routeId,
             },
