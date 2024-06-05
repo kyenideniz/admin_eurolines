@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import prismadb from "@/lib/prismadb";
+
+import { v4 as uuidv4 } from 'uuid';
+import { db } from '@/firebaseConfig';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 
 export async function POST(
     req: Request,
@@ -23,18 +26,18 @@ export async function POST(
             return new NextResponse("Value is required", { status: 400});
         }
 
-        const city = await prismadb.city.create({
-            data : {
-                name,
-                value,
-            }
-        })
-
+        const city = await addDoc(collection(db, 'cities'), {
+            id: uuidv4(),
+            name,
+            value,
+            createdAt: new Date(),
+            });
+            console.log('Document written with ID: ', city.id);
+        
         return NextResponse.json(city);
 
-    } catch (err) {
-        console.log(`[CITIES_POST] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500})
+    } catch (e) {
+        console.error('Error adding document: ', e);
     }
 }
 
@@ -43,11 +46,11 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const cities = await prismadb.city.findMany({
-            where: {
-                id: params.id
-            }
-        })
+        const querySnapshot = await getDocs(collection(db, 'cities'));
+        const cities: any[] = [];
+        querySnapshot.forEach((doc) => {
+            cities.push({ id: doc.id, ...doc.data() });
+        });
 
         return NextResponse.json(cities);
 

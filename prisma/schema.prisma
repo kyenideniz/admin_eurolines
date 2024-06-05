@@ -3,55 +3,73 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // or any other database provider you use
-  url = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Route {
   id              String      @id @default(uuid())
   day             DateTime
-
   startCityId     String
   startCity       City        @relation("StartCity", fields: [startCityId], references: [id])
-  
   endCityId       String
   endCity         City        @relation("EndCity", fields: [endCityId], references: [id])
-  
-  stops           RouteStop[]
-
+  stops           Stop[]
   price           Float
-
-  totalSeats      Int
-  emptySeats      Int
-  occupiedSeats   Int
-
+  totalSeats      Int         @default(55)
+  emptySeats      Int         @default(55)
+  occupiedSeats   Int         @default(0)
+  seats           Seat[]
   createdAt       DateTime    @default(now())
 
-  @@index([endCityId])
   @@index([startCityId])
+  @@index([endCityId])
 }
 
 model City {
   id              String      @id @default(uuid())
   name            String
   value           String
-
-  routesAsStart   Route[]   @relation("StartCity")
-  routesAsEnd     Route[]   @relation("EndCity")
-  stops           RouteStop[]
-
-  createdAt       DateTime   @default(now())
+  isOffered       Boolean     @default(false) // Indicates whether the city is offered as part of a route
+  imageUrl        String?     // Optional image URL for the city
+  routesAsStart   Route[]     @relation("StartCity")
+  routesAsEnd     Route[]     @relation("EndCity")
+  stops           Stop[]
+  createdAt       DateTime    @default(now())
 }
 
-model RouteStop {
-  id              String      @id @default(uuid())
-  routeId         String
-  route           Route       @relation(fields: [routeId], references: [id])
-  cityId          String
-  city            City        @relation(fields: [cityId], references: [id])
+model Stop {
+  id        String    @id @default(uuid())
+  routeId   String
+  route     Route     @relation(fields: [routeId], references: [id])
+  cityId    String
+  city      City      @relation(fields: [cityId], references: [id])
+  order     Int       // Order of the stop in the route
 
-  createdAt       DateTime    @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([routeId])
   @@index([cityId])
+}
+
+model Seat {
+  id          String      @id @default(uuid())
+  routeId     String
+  route       Route       @relation(fields: [routeId], references: [id])
+  seatNumber  Int
+  isOccupied  Boolean     @default(false)
+  passengerId String?     @unique
+  passenger   Passenger?  @relation("PassengerSeat", fields: [passengerId], references: [id])
+
+  createdAt   DateTime    @default(now())
+
+  @@index([routeId])
+  @@index([passengerId])
+}
+
+model Passenger {
+  id        String    @id @default(uuid())
+  name      String
+  email     String
+  seat      Seat?     @relation("PassengerSeat")
 }
