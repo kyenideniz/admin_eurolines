@@ -1,33 +1,36 @@
 import { RouteForm } from "./components/route-form";
 import { db } from '@/firebaseConfig'
 import { doc, getDoc, collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { Route } from "@/types"
 
 const RoutePage = async ({ params }: { params: { routeId: string } }) => {
     // Fetch route data from Firestore
     const routeDocRef = doc(db, 'routes', params.routeId);
     const routeDocSnapshot = await getDoc(routeDocRef);
-    let route: Route | null = null;
+    let route: any | null = null;
+
+    // Fetch stops subcollection
+    const stopsCollectionRef = collection(db, `routes/${params.routeId}/stops`);
+    const stopsQuerySnapshot = await getDocs(stopsCollectionRef);
+
+    // Map stops documents to corresponding city names
+    const stopsData = stopsQuerySnapshot.docs.map((stopDoc) => {
+        const stopData = stopDoc.data();
+        return stopData.cityId
+    });
 
     if (routeDocSnapshot.exists()) {
         const routeData = routeDocSnapshot.data();
         route = {
             id: routeDocSnapshot.id,
-            day: routeData.day.toDate(), // Convert Firestore Timestamp to Date
+            day: routeData.day, // Convert Firestore Timestamp to Date
             startCityId: routeData.startCityId,
             endCityId: routeData.endCityId,
             price: routeData.price,
             totalSeats: routeData.totalSeats,
             emptySeats: routeData.emptySeats,
             occupiedSeats: routeData.occupiedSeats,
-            createdAt: routeData.createdAt.toDate(), // Convert Firestore Timestamp to Date
-            stops: (routeData.stops || []).map((stop: any) => ({
-                id: stop.id,
-                routeId: stop.routeId,
-                cityId: stop.cityId,
-                order: stop.order,
-                createdAt: stop.createdAt.toDate(), // Convert Firestore Timestamp to Date
-            })),
+            createdAt: routeData.createdAt, // Convert Firestore Timestamp to Date
+            stops: stopsData
         };
     }
 

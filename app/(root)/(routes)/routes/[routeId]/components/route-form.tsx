@@ -22,9 +22,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Stop } from '@/types';
 
 interface SettingsFromProps {
-    initialData: (Route & { stops: RouteStop[] }) | null;  
+    initialData: (Route & { stops: Stop[] }) | null;  
     cities: { id: string; name: string; value: string; isOffered: boolean; imageUrl: string | null; createdAt: Date; }[];
 }
 
@@ -34,7 +35,6 @@ const formSchema = z.object({
     endCityId: z.string().min(1),
     price: z.coerce.number().min(1),
     stops: z.array(z.object({
-        id: z.string().min(1),
         cityId: z.string().min(1),
     })).min(1),
 });
@@ -63,16 +63,16 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
             ...initialData,
             day: dayjs(initialData.day),
             price: parseFloat(String(initialData.price)),
-            stops: initialData.stops.map(stop => ({ id: stop.id, cityId: stop.cityId })),
+            stops: initialData.stops.map(stop => ({ cityId: stop.cityId })),
         } : {
             day: dayjs(new Date()),
             startCityId: '',
             endCityId: '',
             price: 1,
-            stops: [],
+            stops: [{ cityId: '' }],
         }
-    });    
-
+    });  
+    
     // Use the form hook with the default stops
     const { fields, append, remove } = useFieldArray({
         control: form.control,
@@ -207,43 +207,44 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
                     <div className="space-y-4">
                         <FormLabel>Stops</FormLabel>
                         {fields.map((item, index) => (
-                            <div key={item.id} className="flex items-center space-x-4">
-                                <FormField
-                                    control={form.control}
-                                    name={`stops.${index}.cityId`}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <Select
-                                                disabled={loading}
-                                                onValueChange={field.onChange}
-                                                value={field.value}
-                                                defaultValue={field.value}
-                                            >
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Select a stop city" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {cities && cities.map(city => (
-                                                        <SelectItem key={city.id} value={city.id}>
-                                                            {city.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <Button type="button" variant="destructive" onClick={() => remove(index)} disabled={loading}>
-                                    Remove
-                                </Button>
-                            </div>
-                        ))}
-                        <Button type="button" onClick={() => append({ id: uuidv4(), cityId: "" })} disabled={loading}>
-                            Add Stop
-                        </Button>
+                        <div key={item.id} className="flex items-center space-x-4">
+                            <FormField
+                                control={form.control}
+                                name={`stops.${index}.cityId`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <Select
+                                            disabled={loading}
+                                            onValueChange={field.onChange}
+                                            value={field.value}
+                                            defaultValue={initialData?.stops[index]?.toString() || field.value}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a stop city" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {cities && cities.map(city => (
+                                                    <SelectItem key={city.id} value={city.id}>
+                                                        {city.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="button" variant="destructive" onClick={() => remove(index)} disabled={loading}>
+                                Remove
+                            </Button>
+                        </div>
+                    ))}
+                    <Button type="button" onClick={() => append({ cityId: "" })} disabled={loading}>
+                        Add Stop
+                    </Button>
+
                     </div>
 
                     <FormField

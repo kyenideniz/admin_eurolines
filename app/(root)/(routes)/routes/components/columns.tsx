@@ -27,12 +27,8 @@ export const columns: ColumnDef<RouteColumn>[] = [
         header: 'Stops',
     },
     {
-        accessorKey: 'totalSeats',
-        header: 'Total Seats (55)',
-    },
-    {
         accessorKey: 'occupiedSeats',
-        header: 'Occupied Seats',
+        header: 'Tickets Bought (55)',
     },
     {
         accessorKey: 'price',

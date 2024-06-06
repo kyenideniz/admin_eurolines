@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { db } from '@/firebaseConfig';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, QueryDocumentSnapshot } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { Stop } from "@/types";
 
@@ -48,27 +48,34 @@ export async function PATCH(
             return new NextResponse("Route not found", { status: 404 });
         }
 
-        const existingStops: Stop[] = routeSnapshot.data().stops || [];
+        // Fetch existing stops
+        const stopsCollectionRef = collection(routeDocRef, 'stops');
+        const existingStopsQuerySnapshot = await getDocs(stopsCollectionRef);
+        const existingStops: Stop[] = existingStopsQuerySnapshot.docs.map((doc: QueryDocumentSnapshot) => doc.data() as Stop);
 
+        // Identify stops to delete
         const stopsToDelete = existingStops.filter(existingStop => {
             return !stops.some((newStop: { id: string; }) => newStop.id === existingStop.id);
         }).map(stop => stop.id);
 
+        // Delete stops that are no longer in the updated list
         for (const stopId of stopsToDelete) {
-            const stopDocRef = doc(db, 'routes', params.routeId, 'stops', stopId);
+            const stopDocRef = doc(stopsCollectionRef, stopId);
             await deleteDoc(stopDocRef);
         }
 
-        const stopsToUpsert = stops.map((stop: { id: any; cityId: string; }) => ({
+        // Upsert stops
+        const stopsToUpsert = stops.map((stop: { id: string; cityId: string; }) => ({
             id: stop.id || uuidv4(),
             cityId: stop.cityId === 'N/A' ? null : stop.cityId,
         }));
 
         for (const stop of stopsToUpsert) {
-            const stopDocRef = doc(db, 'routes', params.routeId, 'stops', stop.id);
+            const stopDocRef = doc(stopsCollectionRef, stop.id);
             await setDoc(stopDocRef, stop, { merge: true });
         }
 
+        // Update the route document
         await updateDoc(routeDocRef, {
             day,
             startCityId,
@@ -82,7 +89,6 @@ export async function PATCH(
         return new NextResponse('Internal error', { status: 500 });
     }
 }
-
 
 //// Delete Method
 

@@ -45,7 +45,6 @@ const RoutesPage = async () => {
                 startCity: cities[routeData.startCityId], // Get start city name
                 endCity: cities[routeData.endCityId], // Get end city name
                 stops: stopsData, // Array of city names
-                occupiedSeats:  Number(routeData.occupiedSeats),
                 price: Number(routeData.price),
             });
         }

@@ -11,7 +11,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { ApiList } from "@/components/ui/api-list"
 
 interface RouteClientProps {
-    data: RouteColumn[] | null
+    data: RouteColumn[];
 }
 
 export const RouteClient: React.FC<RouteClientProps> = ({
