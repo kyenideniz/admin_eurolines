@@ -1,19 +1,16 @@
 "use client"
 import { ColumnDef } from '@tanstack/react-table';
 import { CellAction } from './cell-action';
+import { Stop } from '@/types';
 
 export type RouteColumn = {
-    id: string
-    day: string,
-    time: string,
-    startCity: string,
-    endCity: string,
-    price: number,
-    totalSeats: number,
-    emptySeats: number,
-    occupiedSeats: number,
-    createdAt: string,
-    stops: Array<string>,
+    id: string;
+    day: string;
+    time: string;
+    startCity: string; // Assuming startCity is the name of the city
+    endCity: string; // Assuming endCity is the name of the city
+    stops: Stop; // Array of strings representing city names
+    price: number;
 }
 
 export const columns: ColumnDef<RouteColumn>[] = [
@@ -38,10 +35,6 @@ export const columns: ColumnDef<RouteColumn>[] = [
         header: 'Occupied Seats',
     },
     {
-        accessorKey: 'emptySeats',
-        header: 'Empty Seats',
-    },
-    {
         accessorKey: 'price',
         header: 'Price Per Seats',
     },
@@ -52,10 +45,6 @@ export const columns: ColumnDef<RouteColumn>[] = [
     {
         accessorKey: 'time',
         header: 'Departure Time',
-    },
-    {
-        accessorKey: 'createdAt',
-        header: 'Created At',
     },
     {
         id: 'actions',

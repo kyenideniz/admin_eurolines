@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
-import prismadb from "@/lib/prismadb";
+import { db } from '@/firebaseConfig';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
-export async function POST(req: Request) {
+export async function POST(
+    req: Request,
+    { params }: { params: { storeId: string } }
+) {
     try {
         const body = await req.json();
         const { day, startCityId, endCityId, price, stops } = body;
@@ -11,28 +15,49 @@ export async function POST(req: Request) {
             return new NextResponse("Invalid data provided", { status: 400 });
         }
 
-        const newRoute = await prismadb.route.create({
-            data: {
-                day,
-                startCityId,
-                endCityId,
-                price,
-                totalSeats: 55,
-                emptySeats: 55,
-                occupiedSeats: 0,
-                stops: {
-                    createMany: {
-                        data: stops.map((stop: any) => ({
-                            id: stop.cityId === 'N/A' ? uuidv4() : stop.id,
-                            cityId: stop.cityId === 'N/A' ? null : stop.cityId,
-                        })),
-                    },
-                },
-            },
-            include: {
-                stops: true,
-            },
+        // Convert day to Firestore Timestamp
+        const formattedDay = new Date(day).toISOString(); 
+
+        // Create a new route document
+        const routeRef = await addDoc(collection(db, 'routes'), {
+            day: formattedDay,
+            startCityId,
+            endCityId,
+            price,
         });
+
+        const routeId = routeRef.id; // Get the ID of the newly created route
+
+        // Create stops subcollection for the route
+        for (const stop of stops) {
+            await addDoc(collection(routeRef, 'stops'), {
+                id: stop.id || uuidv4(),
+                cityId: stop.cityId,
+            });
+        }
+
+        // Create seats subcollection for the route
+        const seatsData = Array.from({ length: 55 }, (_, i) => ({
+            seatId: uuidv4(),
+            seatNumber: i + 1,
+            isOccupied: false,
+            passengerId: null,
+        }));
+
+        for (const seat of seatsData) {
+            await addDoc(collection(routeRef, 'seats'), seat);
+        }
+
+        // Return the newly created route data
+        const newRoute = {
+            id: routeId,
+            day: formattedDay,
+            startCityId,
+            endCityId,
+            price,
+            stops: stops,
+            seats: seatsData,
+        };
 
         return NextResponse.json(newRoute);
     } catch (err) {
@@ -43,37 +68,30 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
     try {
-        const routes = await prismadb.route.findMany({
-            include: {
-                startCity: true,
-                endCity: true,
-                stops: {
-                    include: {
-                        city: true,
-                    },
-                },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
+        const querySnapshot = await getDocs(collection(db, 'routes'));
+        const routes: any[] = [];
+        
+        querySnapshot.forEach((doc) => {
+            const routeData = doc.data();
+            // Assuming stops and seats are subcollections
+            // You may need to adjust this depending on your Firestore structure
+            const stopsQuery = collection(doc.ref, 'stops');
+            const seatsQuery = collection(doc.ref, 'seats');
+            
+            routes.push({
+                id: doc.id,
+                day: routeData.day.toDate(), // Assuming day is a Firestore Timestamp
+                startCityId: routeData.startCityId,
+                endCityId: routeData.endCityId,
+                price: Number(routeData.price),
+                // You may need to fetch stops and seats separately if they are in subcollections
+                // or if they contain more data than just IDs
+                stopsQuery: stopsQuery.path,
+                seatsQuery: seatsQuery.path,
+            });
         });
 
-        const formattedRoutes = routes.map((item) => ({
-            id: item.id,
-            day: item.day,
-            time: item.day,
-            startCity: item.startCity.name,
-            endCity: item.endCity.name,
-            stops: item.stops.map((stop) => stop.city.name),
-            price: Number(item.price),
-            totalSeats: item.totalSeats,
-            emptySeats: item.emptySeats,
-            occupiedSeats: item.occupiedSeats,
-            createdAt: item.createdAt,
-        }));
-
-        console.log('Routes fetched:', formattedRoutes);
-        return NextResponse.json(formattedRoutes);
+        return NextResponse.json(routes);
 
     } catch (err:any) {
         console.error(`[ROUTES_GET] Error: ${err.message}`);

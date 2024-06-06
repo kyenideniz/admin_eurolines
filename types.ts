@@ -1,17 +1,14 @@
 export interface Route {
     id: string;
     day: Date;
-
-    startCity: City;
-    endCity: City;
-
-    stops: RouteStop[];
-
+    startCityId: string;
+    endCityId: string;
     price: number;
-
     totalSeats: number;
     emptySeats: number;
     occupiedSeats: number;
+    createdAt: Date;
+    stops: Stop[];
 }
 
 
@@ -23,9 +20,11 @@ export interface City {
     isOffered: boolean;
 }
   
-export interface RouteStop {
+export interface Stop {
     id: string;
-    route: Route;
-    city: City;
+    routeId: string;
+    cityId: string;
+    order: number;
+    createdAt: Date;
 }
   

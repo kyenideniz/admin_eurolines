@@ -35,6 +35,7 @@
     "lucide-react": "^0.381.0",
     "next": "14.2.3",
     "prisma": "^5.15.0",
+    "query-string": "^9.0.0",
     "rc-time-picker": "^3.7.3",
     "react": "^18",
     "react-day-picker": "^8.10.1",

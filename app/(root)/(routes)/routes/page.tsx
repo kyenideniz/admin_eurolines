@@ -1,51 +1,66 @@
-import prismadb from '@/lib/prismadb';
 import { RouteClient } from './components/client';
 import { RouteColumn } from './components/columns';
+import { collection, getDocs, doc } from 'firebase/firestore';
 import { format } from 'date-fns';
+import { db } from '@/firebaseConfig';
+import { Timestamp } from 'firebase/firestore';
 
-const RoutesPage = () => {
-    return new Promise((resolve, reject) => {
-        prismadb.route
-            .findMany({
-                include: {
-                    startCity: true,
-                    endCity: true,
-                    stops: {
-                        include: {
-                            city: true,
-                        },
-                    },
-                },
-                orderBy: {
-                    createdAt: 'desc',
-                },
-            })
-            .then((routes) => {
-                const formattedRoutes: RouteColumn[] = routes.map((item) => ({
-                    id: item.id,
-                    day: format(item.day, 'PPP'),
-                    time: format(item.day, 'p'),
-                    startCity: item.startCity.name,
-                    endCity: item.endCity.name,
-                    stops: item.stops.map((stop) => stop.city.name),
-                    price: Number(item.price),
-                    totalSeats: item.totalSeats,
-                    emptySeats: item.emptySeats,
-                    occupiedSeats: item.occupiedSeats,
-                    createdAt: format(item.createdAt, 'PPP'),
-                }));
-                resolve(
-                    <div className="flex-col">
-                        <div className="flex-1 p-8 pt-6 space-y-4">
-                            <RouteClient data={formattedRoutes} />
-                        </div>
-                    </div>
-                );
-            })
-            .catch((error) => {
-                reject(error);
+export const revalidate = 0; 
+
+const RoutesPage = async () => {
+    try {
+        // Fetch cities data
+        const cityQuerySnapshot = await getDocs(collection(db, 'cities'));
+        const cities: { [id: string]: string } = {}; // Map to store city ID and name
+
+        cityQuerySnapshot.forEach((cityDoc) => {
+            const cityData = cityDoc.data();
+            cities[cityDoc.id] = cityData.name; // Store city name with its ID
+        });
+
+        // Fetch routes data
+        const querySnapshot = await getDocs(collection(db, 'routes'));
+        const formattedRoutes: any[] = [];
+
+        for (const routeDoc of querySnapshot.docs) {
+            const routeData = routeDoc.data();
+
+            // Convert routeData.day to a JavaScript Date object if it's a Firestore Timestamp
+            const day = routeData.day instanceof Timestamp ? routeData.day.toDate() : new Date(routeData.day);
+
+            // Fetch stops subcollection
+            const stopsCollectionRef = collection(db, `routes/${routeDoc.id}/stops`);
+            const stopsQuerySnapshot = await getDocs(stopsCollectionRef);
+
+            // Map stops documents to corresponding city names
+            const stopsData = stopsQuerySnapshot.docs.map((stopDoc) => {
+                const stopData = stopDoc.data();
+                return cities[stopData.cityId] || 'Unknown City';
             });
-    });
+
+            formattedRoutes.push({
+                id: routeDoc.id,
+                day: format(day, 'PPP'),
+                time: format(day, 'p'),
+                startCity: cities[routeData.startCityId], // Get start city name
+                endCity: cities[routeData.endCityId], // Get end city name
+                stops: stopsData, // Array of city names
+                occupiedSeats:  Number(routeData.occupiedSeats),
+                price: Number(routeData.price),
+            });
+        }
+
+        return (
+            <div className="flex-col">
+                <div className="flex-1 p-8 pt-6 space-y-4">
+                    <RouteClient data={formattedRoutes} />
+                </div>
+            </div>
+        );
+    } catch (error) {
+        console.error('Error fetching routes:', error);
+        return <div>Error loading routes</div>;
+    }
 };
 
 export default RoutesPage;

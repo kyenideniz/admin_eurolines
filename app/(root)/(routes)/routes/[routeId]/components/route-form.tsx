@@ -25,7 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 interface SettingsFromProps {
     initialData: (Route & { stops: RouteStop[] }) | null;  
-    cities: City[],
+    cities: { id: string; name: string; value: string; isOffered: boolean; imageUrl: string | null; createdAt: Date; }[];
 }
 
 const formSchema = z.object({
@@ -71,7 +71,7 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
             price: 1,
             stops: [],
         }
-    });
+    });    
 
     // Use the form hook with the default stops
     const { fields, append, remove } = useFieldArray({
@@ -86,7 +86,7 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
             setLoading(true);
             const updatedData = {
                 ...data,
-                day: dayjs(data.day).toISOString(),
+                day: dayjs(data.day).toISOString(), // Convert day to Firestore-compatible format
             };
             if (initialData) {
                 await axios.patch(`/api/routes/${params.routeId}`, updatedData);
@@ -101,7 +101,7 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
         } finally {
             setLoading(false);
         }
-    };
+    };    
 
     const onDelete = async () => {
         try {
@@ -241,7 +241,7 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
                                 </Button>
                             </div>
                         ))}
-                        <Button type="button" onClick={() => append({ id: uuidv4(), cityId: "0" })} disabled={loading}>
+                        <Button type="button" onClick={() => append({ id: uuidv4(), cityId: "" })} disabled={loading}>
                             Add Stop
                         </Button>
                     </div>

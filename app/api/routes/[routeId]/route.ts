@@ -1,6 +1,8 @@
-import prismadb from "@/lib/prismadb";
 import { NextResponse } from "next/server"
+import { db } from '@/firebaseConfig';
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { Stop } from "@/types";
 
 export async function GET (
     req: Request,
@@ -11,16 +13,16 @@ export async function GET (
             return new NextResponse("Route id is required", { status: 400 });
         }
 
-        const route = await prismadb.route.findUnique({
-            where: {
-                id: params.routeId,
-            },
-            include: {
-                stops: true,
-            },
-        })
+        const routeDocRef = doc(db, 'routes', params.routeId);
+        const routeSnapshot = await getDoc(routeDocRef);
 
-        return NextResponse.json(route);
+        if (!routeSnapshot.exists()) {
+            return new NextResponse("Route not found", { status: 404 });
+        }
+
+        const routeData = routeSnapshot.data();
+
+        return NextResponse.json(routeData);
     } catch (err) {
         console.log('[ROUTE_GET]', err)
         return new NextResponse('Internal error', { status: 500 })
@@ -39,69 +41,42 @@ export async function PATCH(
             return new NextResponse("Invalid data provided", { status: 400 });
         }
 
-        const existingStops = await prismadb.route.findUnique({
-            where: {
-                id: params.routeId,
-            },
-            select: {
-                stops: {
-                    select: {
-                        id: true,
-                    },
-                },
-            },
-        });
+        const routeDocRef = doc(db, 'routes', params.routeId);
+        const routeSnapshot = await getDoc(routeDocRef);
 
-        const existingStopIds = existingStops ? existingStops.stops.map((stop) => stop.id) : [];
-
-        if (stops.length === 0) {
-            await prismadb.stop.deleteMany({
-                where: {
-                    routeId: params.routeId,
-                },
-            });
-        } else {
-            const stopsToDelete = existingStopIds.filter((existingStopId) => {
-                return !stops.some((newStop: { id: string; }) => newStop.id === existingStopId);
-            });
-
-            await prismadb.stop.deleteMany({
-                where: {
-                    id: {
-                        in: stopsToDelete,
-                    },
-                },
-            });
+        if (!routeSnapshot.exists()) {
+            return new NextResponse("Route not found", { status: 404 });
         }
 
-        const updatedRoute = await prismadb.route.update({
-            where: {
-                id: params.routeId,
-            },
-            data: {
-                day,
-                startCityId,
-                endCityId,
-                price,
-                stops: {
-                    upsert: stops.map((stop: { id: any; cityId: string; }) => ({
-                        where: { id: stop.id || uuidv4() }, // Add condition to handle empty ids
-                        create: {
-                            id: stop.cityId === 'N/A' ? uuidv4() : stop.id,
-                            cityId: stop.cityId === 'N/A' ? null : stop.cityId,
-                        },
-                        update: {
-                            cityId: stop.cityId === 'N/A' ? null : stop.cityId,
-                        },
-                    })),
-                },
-            },
-            include: {
-                stops: true,
-            },
+        const existingStops: Stop[] = routeSnapshot.data().stops || [];
+
+        const stopsToDelete = existingStops.filter(existingStop => {
+            return !stops.some((newStop: { id: string; }) => newStop.id === existingStop.id);
+        }).map(stop => stop.id);
+
+        for (const stopId of stopsToDelete) {
+            const stopDocRef = doc(db, 'routes', params.routeId, 'stops', stopId);
+            await deleteDoc(stopDocRef);
+        }
+
+        const stopsToUpsert = stops.map((stop: { id: any; cityId: string; }) => ({
+            id: stop.id || uuidv4(),
+            cityId: stop.cityId === 'N/A' ? null : stop.cityId,
+        }));
+
+        for (const stop of stopsToUpsert) {
+            const stopDocRef = doc(db, 'routes', params.routeId, 'stops', stop.id);
+            await setDoc(stopDocRef, stop, { merge: true });
+        }
+
+        await updateDoc(routeDocRef, {
+            day,
+            startCityId,
+            endCityId,
+            price,
         });
 
-        return NextResponse.json(updatedRoute);
+        return NextResponse.json({ message: "Route updated successfully" });
     } catch (err) {
         console.log('[ROUTE_PATCH]', err);
         return new NextResponse('Internal error', { status: 500 });
@@ -120,21 +95,16 @@ export async function DELETE (
             return new NextResponse("Route id is required", { status: 400 });
         }
 
-        // Delete related records in RouteStop table
-        await prismadb.stop.deleteMany({
-            where: {
-                routeId: params.routeId,
-            },
-        });
+        const routeDocRef = doc(db, 'routes', params.routeId);
+        const routeSnapshot = await getDoc(routeDocRef);
 
-        // Now delete the route
-        const route = await prismadb.route.delete({
-            where: {
-                id: params.routeId,
-            },
-        });
+        if (!routeSnapshot.exists()) {
+            return new NextResponse("Route not found", { status: 404 });
+        }
 
-        return NextResponse.json(route);
+        await deleteDoc(routeDocRef);
+
+        return NextResponse.json({ message: "Route deleted successfully" });
     } catch (err) {
         console.log('[ROUTE_DELETE]', err);
         return new NextResponse('Internal error', { status: 500 });
