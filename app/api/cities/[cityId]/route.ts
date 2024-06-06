@@ -1,87 +1,97 @@
-import prismadb from "@/lib/prismadb";
+import { db, storage } from '@/firebaseConfig';
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+
 import { NextResponse } from "next/server"
 
-export async function GET (
+
+export async function GET(
     req: Request,
-    { params }: { params: { cityId: string }}
+    { params }: { params: { id: string } }
 ) {
     try {
-        if(!params.cityId) {
-            return new NextResponse("City id is required", { status: 400 });
-        }
+        const querySnapshot = await getDocs(collection(db, 'cities'));
+        const cities: any[] = [];
+        querySnapshot.forEach((doc) => {
+            cities.push({ id: doc.id, ...doc.data() });
+        });
 
-        const city = await prismadb.city.findUnique({
-            where: {
-                id: params.cityId,
-            }
-        })
+        return NextResponse.json(cities);
 
-        return NextResponse.json(city);
     } catch (err) {
-        console.log('[CITY_GET]', err)
-        return new NextResponse('Internal error', { status: 500 })
+        console.log(`[CITIES_GET] ${err}`);
+        return new NextResponse(`Internal error`, { status: 500})
     }
 }
-
-export async function PATCH (
+export async function PATCH(
     req: Request,
-    { params }: { params: { cityId: string }}
+    { params }: { params: { cityId: string } }
 ) {
     try {
-        const body = await req.json();
+        const formData = await req.formData();
 
-        const { name, value } = body;
+        const name = formData.get('name') as string;
+        const value = formData.get('value') as string;
+        const isOffered = formData.get('isOffered') === 'true';
+        const file = formData.get('file') as File | null;
 
         if (!name) {
             return new NextResponse("Name is required", { status: 400 });
         }
 
         if (!value) {
-            return new NextResponse("Image URL is required", { status: 400 });
+            return new NextResponse("Value is required", { status: 400 });
         }
 
-        if(!params.cityId) {
+        if (!params.cityId) {
             return new NextResponse("City id is required", { status: 400 });
         }
 
-        const city = await prismadb.city.updateMany({
-            where: {
-                id: params.cityId
-            },
-            data: {
-                name,
-                value
-            }
-        })
+        const cityDocRef = doc(db, 'cities', params.cityId);
 
-        return NextResponse.json(city);
+        if (file) {
+            const storageRef = ref(storage, `cities/${params.cityId}/${file.name}`);
+            await uploadBytes(storageRef, file);
+            const fileUrl = await getDownloadURL(storageRef);
+
+            await updateDoc(cityDocRef, {
+                name,
+                value,
+                isOffered,
+                url: fileUrl
+            });
+        } else {
+            await updateDoc(cityDocRef, {
+                name,
+                value,
+                isOffered
+            });
+        }
+
+        return new NextResponse(JSON.stringify({ message: 'City updated successfully' }), { status: 200 });
     } catch (err) {
-        console.log('[CITY_PATCH]', err)
-        return new NextResponse('Internal error', { status: 500 })
+        console.log('[CITY_PATCH]', err);
+        return new NextResponse('Internal error', { status: 500 });
     }
 }
 
 //// Delete Method
-
 export async function DELETE (
     req: Request,
     { params }: { params: { cityId: string }}
 ) {
     try {
-
-        if(!params.cityId) {
+        if (!params.cityId) {
             return new NextResponse("City id is required", { status: 400 });
         }
 
-        const city = await prismadb.city.deleteMany({
-            where: {
-                id: params.cityId,
-            }
-        })
+        const cityDocRef = doc(db, 'cities', params.cityId);
+        
+        await deleteDoc(cityDocRef);
 
-        return NextResponse.json(city);
+        return new NextResponse(JSON.stringify({ message: 'City deleted successfully' }), { status: 200 });
     } catch (err) {
-        console.log('[CITY_DELETE]', err)
-        return new NextResponse('Internal error', { status: 500 })
+        console.log('[CITY_DELETE]', err);
+        return new NextResponse('Internal error', { status: 500 });
     }
 }

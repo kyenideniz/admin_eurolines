@@ -1,9 +1,6 @@
-import { format } from 'date-fns'
-import { db } from '@/firebaseConfig' // Ensure you have this file configured as shown earlier
+import { db } from '@/firebaseConfig'
 import { doc, getDoc } from 'firebase/firestore';
-import { City } from "@/types"
 import { CityForm } from './components/city-form';
-import { v4 as uuidv4 } from 'uuid';
 
 export const revalidate = 0;
 
@@ -17,8 +14,11 @@ const CityPage = async ({ params }: { params: { cityId: string } }) => {
         const cityData = cityDocSnapshot.data();
         formattedCity = {
             id: cityDocSnapshot.id,
+            cityId: cityData.id,
             name: cityData.name,
             value: cityData.value,
+            url: cityData.url,
+            isOffered: cityData.isOffered,
         };
 
         return(
@@ -28,14 +28,15 @@ const CityPage = async ({ params }: { params: { cityId: string } }) => {
                 </div>
             </div>
         )
-    }
+    }else{
     return(
-    <div className="flex-col">
-        <div className="flex-1 p-8 pt-6 space-y-4">
-            <CityForm initialData={null} />
+        <div className="flex-col">
+            <div className="flex-1 p-8 pt-6 space-y-4">
+                <CityForm initialData={null} />
+            </div>
         </div>
-    </div>
-    )
+        )
+    }
 };
 
 export default CityPage;
