@@ -55,7 +55,7 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
             ...initialData,
             day: dayjs(initialData.day),
             price: parseFloat(String(initialData.price)),
-            stops: initialData.stops,
+            stops: initialData.stops
         } : {
             day: dayjs(new Date()),
             startCityId: '',
@@ -68,7 +68,7 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
     const { control, handleSubmit, register, setValue } = form;
     
     const stopsData = form.getValues("stops");
-    console.log(cities[0].id);
+    console.log("data",stopsData);
 
     // Use the useFieldArray hook to manage the stops array
     const { fields, append, remove } = useFieldArray({
@@ -229,7 +229,7 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
                                                     >
                                                         <FormControl>
                                                             <SelectTrigger>
-                                                                <SelectValue>{cities[stop]}</SelectValue>
+                                                                <SelectValue>{cities.find(city => city.id === stop)?.name ?? ''}</SelectValue>
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
