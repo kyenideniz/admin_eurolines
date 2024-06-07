@@ -36,7 +36,7 @@ export const columns: ColumnDef<RouteColumn>[] = [
     },
     {
         accessorKey: 'day',
-        header: 'Day',
+        header: 'Departure Day',
     },
     {
         accessorKey: 'time',

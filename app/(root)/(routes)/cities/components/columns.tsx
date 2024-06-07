@@ -5,7 +5,8 @@ import { CellAction } from './cell-action';
 export type CityColumn = {
     id: string
     name: string
-    value: string
+    isOffered: string
+    hasImage: string
     createdAt: string
 }
 
@@ -15,12 +16,16 @@ export const columns: ColumnDef<CityColumn>[] = [
         header: 'Name',
     },
     {
-        accessorKey: 'value',
-        header: 'Value',
+        accessorKey: 'isOffered',
+        header: 'Offered City',
+    },
+    {
+        accessorKey: 'hasImage',
+        header: 'Image Uploaded',
     },
     {
         accessorKey: 'createdAt',
-        header: 'Date',
+        header: 'Date Added',
     },
     {
         id: 'actions',

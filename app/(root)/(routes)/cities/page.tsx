@@ -21,7 +21,8 @@ const CitiesPage = async () => {
             return {
                 id: doc.id,
                 name: data.name,
-                value: data.value,
+                isOffered: data.isOffered ? "Yes" : "No",
+                hasImage: data.url ? "Yes" : "No",
                 createdAt: format(data.createdAt.toDate(), "MMMM do, yyyy")
             };
         });
