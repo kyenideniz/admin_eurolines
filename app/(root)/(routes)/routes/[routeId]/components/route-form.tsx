@@ -222,14 +222,15 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
                                                 <TableRow key={`stops.${index}`}>
                                                     <TableCell>{index + 1}</TableCell>
                                                     <TableCell>
+                                                    {cities.find(city => city.id === stop)?.name }
                                                     <Select
                                                         disabled={loading}
                                                         onValueChange={(value) => setValue(`stops.${index}`, value)}
-                                                        value={stop}
+                                                        value={form.getValues("stops")?.[index]}
                                                     >
                                                         <FormControl>
                                                             <SelectTrigger>
-                                                                <SelectValue>{cities.find(city => city.id === stop)?.name ?? ''}</SelectValue>
+                                                                <SelectValue>{cities.find(city => city.id === stop)?.name ?? form.getValues("stops")?.[index]}</SelectValue>
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
@@ -256,6 +257,7 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
                                         </TableBody>
                                     </Table>
                                 </div>
+                                
                                 <Button type="button" onClick={() => append(cities[0].id)} disabled={loading}>
                                     Add Stop
                                 </Button>

@@ -24,10 +24,7 @@ export async function GET (
 
         return NextResponse.json({
             ...routeData,
-            stops: routeData.stops.map((stop: { id: any; cityId: any; }) => ({
-                id: stop.id,
-                cityId: stop.cityId,
-            })),
+            stops: routeData.Stops
         });
     } catch (err) {
         console.log('[ROUTE_GET]', err)
@@ -53,7 +50,7 @@ export async function PATCH(
         if (!routeSnapshot.exists()) {
             return new NextResponse("Route not found", { status: 404 });
         }
-
+        console.log("stops:",stops)
         await updateDoc(routeDocRef, {
             day,
             startCityId,

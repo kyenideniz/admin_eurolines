@@ -24,7 +24,6 @@ const RoutesPage = async () => {
 
         for (const routeDoc of querySnapshot.docs) {
             const routeData = routeDoc.data();
-        
             // Convert routeData.day to a JavaScript Date object if it's a Firestore Timestamp
             const day = routeData.day instanceof Timestamp ? routeData.day.toDate() : new Date(routeData.day);
         

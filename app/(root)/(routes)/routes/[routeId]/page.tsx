@@ -20,7 +20,7 @@ const RoutePage = async ({ params }: { params: { routeId: string } }) => {
             emptySeats: routeData.emptySeats,
             occupiedSeats: routeData.occupiedSeats,
             createdAt: routeData.createdAt, // Convert Firestore Timestamp to Date
-            stops: routeData.stops.map((stop: { cityId: any; }) => stop.cityId) // Assuming each stop object has a cityId field
+            stops: routeData.stops // Assuming each stop object has a cityId field
         };
     }
 
