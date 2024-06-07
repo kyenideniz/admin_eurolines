@@ -65,10 +65,10 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
         }
     });
 
-    const { control, handleSubmit, register, setValue } = form;
-    
-    const stopsData = form.getValues("stops");
-    console.log("data",stopsData);
+    const { control, setValue } = form;
+
+    const [stopValue, setStopValue] = useState('')
+    const [stopSelectValue, setStopSelectValue] = useState('')
 
     // Use the useFieldArray hook to manage the stops array
     const { fields, append, remove } = useFieldArray({
@@ -213,52 +213,73 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>Stop Number</TableHead>
-                                                <TableHead>City Name</TableHead>
+                                                <TableHead>Stop Name</TableHead>
+                                                <TableHead>New Stop Name</TableHead>
                                                 <TableHead>Action</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {form.getValues("stops")?.map((stop: string, index: number) => (
-                                                <TableRow key={`stops.${index}`}>
-                                                    <TableCell>{index + 1}</TableCell>
-                                                    <TableCell>
+                                        {form.getValues("stops")?.map((stop: string, index: number) => (
+                                            <TableRow key={`stops.${index}`}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell>
                                                     {cities.find(city => city.id === stop)?.name }
+                                                </TableCell>
+                                                <TableCell>
                                                     <Select
                                                         disabled={loading}
                                                         onValueChange={(value) => setValue(`stops.${index}`, value)}
-                                                        value={form.getValues("stops")?.[index]}
                                                     >
                                                         <FormControl>
                                                             <SelectTrigger>
-                                                                <SelectValue>{cities.find(city => city.id === stop)?.name ?? form.getValues("stops")?.[index]}</SelectValue>
+                                                                <SelectValue placeholder={"Select a city..."}></SelectValue>
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
                                                             {cities.map(city => (
-                                                                <SelectItem key={city.id} value={city.id}>
+                                                                <SelectItem key={city.id} value={city.id} >
                                                                     {city.name}
                                                                 </SelectItem>
                                                             ))}
                                                         </SelectContent>
                                                     </Select>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Button
-                                                            type="button"
-                                                            variant="destructive"
-                                                            onClick={() => remove(index)}
-                                                            disabled={loading}
-                                                        >
-                                                            Remove
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        onClick={() => remove(index)}
+                                                        disabled={loading}
+                                                    >
+                                                        Remove
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                         </TableBody>
                                     </Table>
                                 </div>
+
+                                <Select
+                                    disabled={loading}
+                                    onValueChange={(value) => setStopValue(value)}
+                                    value={stopValue}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={"Select a city..."}></SelectValue>
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {cities.map(city => (
+                                            <SelectItem key={city.id} value={city.id}>
+                                                {city.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                                 
-                                <Button type="button" onClick={() => append(cities[0].id)} disabled={loading}>
+                                <Button type="button" onClick={() => append(stopValue)} disabled={loading}>
                                     Add Stop
                                 </Button>
                             </>
