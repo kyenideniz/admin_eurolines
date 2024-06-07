@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from '@/firebaseConfig';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, getDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(
@@ -63,24 +63,28 @@ export async function GET(req: Request) {
     try {
         const querySnapshot = await getDocs(collection(db, 'routes'));
         const routes: any[] = [];
-        
+
         querySnapshot.forEach((doc) => {
             const routeData = doc.data();
-            
+
+            let day = routeData.day;
+            if (day && typeof day.toDate === 'function') {
+                day = day.toDate(); // Convert Firestore Timestamp to JavaScript Date
+            }
+
             routes.push({
                 id: doc.id,
-                day: routeData.day.toDate(), // Assuming day is a Firestore Timestamp
+                day,
                 startCityId: routeData.startCityId,
                 endCityId: routeData.endCityId,
                 price: Number(routeData.price),
-                stops: routeData.stops, // Stops are now directly part of the route document
+                stops: routeData.stops, // Assuming stops is an array
             });
         });
 
         return NextResponse.json(routes);
-    } catch (err:any) {
-        console.error(`[ROUTES_GET] Error: ${err.message}`);
-        console.error(`[ROUTES_GET] Stack: ${err.stack}`);
+    } catch (err) {
+        console.log('[ROUTE_GET]', err);
         return new NextResponse('Internal error', { status: 500 });
     }
 }
