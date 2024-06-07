@@ -24,10 +24,7 @@ export async function POST(
             startCityId,
             endCityId,
             price,
-            stops: stops.map((stop: { id: any; cityId: any; }) => ({
-                id: stop.id || uuidv4(),
-                cityId: stop.cityId,
-            })),
+            stops,
         });
 
         const routeId = routeRef.id; // Get the ID of the newly created route
