@@ -18,23 +18,19 @@ export async function POST(
         // Convert day to Firestore Timestamp
         const formattedDay = new Date(day).toISOString(); 
 
-        // Create a new route document
+        // Create a new route document with stops as an array
         const routeRef = await addDoc(collection(db, 'routes'), {
             day: formattedDay,
             startCityId,
             endCityId,
             price,
+            stops: stops.map((stop: { id: any; cityId: any; }) => ({
+                id: stop.id || uuidv4(),
+                cityId: stop.cityId,
+            })),
         });
 
         const routeId = routeRef.id; // Get the ID of the newly created route
-
-        // Create stops subcollection for the route
-        for (const stop of stops) {
-            await addDoc(collection(routeRef, 'stops'), {
-                id: stop.id || uuidv4(),
-                cityId: stop.cityId,
-            });
-        }
 
         // Create seats subcollection for the route
         const seatsData = Array.from({ length: 55 }, (_, i) => ({
@@ -55,7 +51,7 @@ export async function POST(
             startCityId,
             endCityId,
             price,
-            stops: stops,
+            stops,
             seats: seatsData,
         };
 
@@ -73,10 +69,6 @@ export async function GET(req: Request) {
         
         querySnapshot.forEach((doc) => {
             const routeData = doc.data();
-            // Assuming stops and seats are subcollections
-            // You may need to adjust this depending on your Firestore structure
-            const stopsQuery = collection(doc.ref, 'stops');
-            const seatsQuery = collection(doc.ref, 'seats');
             
             routes.push({
                 id: doc.id,
@@ -84,15 +76,11 @@ export async function GET(req: Request) {
                 startCityId: routeData.startCityId,
                 endCityId: routeData.endCityId,
                 price: Number(routeData.price),
-                // You may need to fetch stops and seats separately if they are in subcollections
-                // or if they contain more data than just IDs
-                stopsQuery: stopsQuery.path,
-                seatsQuery: seatsQuery.path,
+                stops: routeData.stops, // Stops are now directly part of the route document
             });
         });
 
         return NextResponse.json(routes);
-
     } catch (err:any) {
         console.error(`[ROUTES_GET] Error: ${err.message}`);
         console.error(`[ROUTES_GET] Stack: ${err.stack}`);

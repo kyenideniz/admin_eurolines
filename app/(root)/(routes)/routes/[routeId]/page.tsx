@@ -8,16 +8,6 @@ const RoutePage = async ({ params }: { params: { routeId: string } }) => {
     const routeDocSnapshot = await getDoc(routeDocRef);
     let route: any | null = null;
 
-    // Fetch stops subcollection
-    const stopsCollectionRef = collection(db, `routes/${params.routeId}/stops`);
-    const stopsQuerySnapshot = await getDocs(stopsCollectionRef);
-
-    // Map stops documents to corresponding city names
-    const stopsData = stopsQuerySnapshot.docs.map((stopDoc) => {
-        const stopData = stopDoc.data();
-        return stopData.cityId
-    });
-
     if (routeDocSnapshot.exists()) {
         const routeData = routeDocSnapshot.data();
         route = {
@@ -30,7 +20,7 @@ const RoutePage = async ({ params }: { params: { routeId: string } }) => {
             emptySeats: routeData.emptySeats,
             occupiedSeats: routeData.occupiedSeats,
             createdAt: routeData.createdAt, // Convert Firestore Timestamp to Date
-            stops: stopsData
+            stops: routeData.stops.map((stop: { cityId: any; }) => stop.cityId) // Assuming each stop object has a cityId field
         };
     }
 

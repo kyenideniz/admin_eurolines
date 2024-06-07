@@ -1,32 +1,29 @@
 "use client"
 
-import React from 'react';
-import { useState } from 'react'
-import * as z from 'zod'
-import { v4 as uuidv4 } from 'uuid';
-import { City, Route, Stop as RouteStop } from "@prisma/client";
-import { Heading } from "@/components/ui/heading";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Trash } from "lucide-react";
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { toast } from 'react-hot-toast';
-import axios from 'axios';
-import { useParams, useRouter } from 'next/navigation';
-import { AlertModal } from '@/components/modals/alert-modal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Stop } from '@/types';
+import { Trash } from "lucide-react";
+import { AlertModal } from '@/components/modals/alert-modal';
+import { useParams, useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
+import * as z from 'zod';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from "react";
+import { Separator } from "@/components/ui/separator";
+import { Heading } from "@/components/ui/heading";
+import { useFieldArray, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface SettingsFromProps {
-    initialData: (Route & { stops: Stop[] }) | null;  
-    cities: { id: string; name: string; value: string; isOffered: boolean; imageUrl: string | null; createdAt: Date; }[];
+interface RouteFormProps {
+    initialData: any;
+    cities: any[];
 }
 
 const formSchema = z.object({
@@ -34,17 +31,12 @@ const formSchema = z.object({
     startCityId: z.string().min(1),
     endCityId: z.string().min(1),
     price: z.coerce.number().min(1),
-    stops: z.array(z.object({
-        cityId: z.string().min(1),
-    })).min(1),
+    stops: z.array( z.string().min(1) ).optional(),
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
 
-export const RouteForm: React.FC<SettingsFromProps> = ({ 
-    initialData,
-    cities,
- }) => {
+export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => {
 
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -63,26 +55,30 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
             ...initialData,
             day: dayjs(initialData.day),
             price: parseFloat(String(initialData.price)),
-            stops: initialData.stops.map(stop => ({ cityId: stop.cityId })),
+            stops: initialData.stops,
         } : {
             day: dayjs(new Date()),
             startCityId: '',
             endCityId: '',
             price: 1,
-            stops: [{ cityId: '' }],
+            stops: [],
         }
-    });  
+    });
+
+    const { control, handleSubmit, register, setValue } = form;
     
-    // Use the form hook with the default stops
+    const stopsData = form.getValues("stops");
+    console.log(cities[0].id);
+
+    // Use the useFieldArray hook to manage the stops array
     const { fields, append, remove } = useFieldArray({
-        control: form.control,
-        name: 'stops',
-        // Ensure that there is always at least one element in the array
-        shouldUnregister: false,
+    control, // Pass control from useForm to useFieldArray
+    name: 'stops', // Specify the name of the field array
     });
 
     const onSubmit = async (data: RouteFormValues) => {
         try {
+            console.log(form.getValues("stops"))
             setLoading(true);
             const updatedData = {
                 ...data,
@@ -101,7 +97,7 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
         } finally {
             setLoading(false);
         }
-    };    
+    };
 
     const onDelete = async () => {
         try {
@@ -137,114 +133,135 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
             <Separator />
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-8">
-                <div className='grid grid-cols-2 gap-8'>
-                    <FormField
-                        control={form.control}
-                        name="startCityId"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Departure City Name</FormLabel>
-                                <Select
+                    <div className='grid grid-cols-2 gap-8'>
+                        <FormField
+                            control={form.control}
+                            name="startCityId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Departure City Name</FormLabel>
+                                    <Select
                                         disabled={loading}
                                         onValueChange={field.onChange}
                                         value={field.value}
                                         defaultValue={field.value}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue
-                                                defaultValue={field.value}
-                                                placeholder='Select departure city'
-                                            />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {cities && cities.map(city => (
-                                            <SelectItem key={city.id} value={city.id}>
-                                                {city.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue
+                                                    defaultValue={field.value}
+                                                    placeholder='Select departure city'
+                                                />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {cities && cities.map(city => (
+                                                <SelectItem key={city.id} value={city.id}>
+                                                    {city.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                     
+                        <FormField
+                            control={form.control}
+                            name="endCityId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Final City Name</FormLabel>
+                                    <Select
+                                        disabled={loading}
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue
+                                                    defaultValue={field.value}
+                                                    placeholder='Select final city'
+                                                />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {cities && cities.map(city => (
+                                                <SelectItem key={city.id} value={city.id}>
+                                                    {city.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="space-y-4">
                     <FormField
                         control={form.control}
-                        name="endCityId"
+                        name="stops"
                         render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Final City Name</FormLabel>
-                            <Select
-                                    disabled={loading}
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                    defaultValue={field.value}
-                            >
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue
-                                            defaultValue={field.value}
-                                            placeholder='Select final city'
-                                        />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    {cities && cities.map(city => (
-                                        <SelectItem key={city.id} value={city.id}>
-                                            {city.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
+                            <>
+                                <FormLabel>Stops</FormLabel>
+                                <div className="border rounded-md">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Stop Number</TableHead>
+                                                <TableHead>City Name</TableHead>
+                                                <TableHead>Action</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {form.getValues("stops")?.map((stop: string, index: number) => (
+                                                <TableRow key={`stops.${index}`}>
+                                                    <TableCell>{index + 1}</TableCell>
+                                                    <TableCell>
+                                                    <Select
+                                                        disabled={loading}
+                                                        onValueChange={(value) => setValue(`stops.${index}`, value)}
+                                                        value={stop}
+                                                    >
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue>{cities[stop]}</SelectValue>
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {cities.map(city => (
+                                                                <SelectItem key={city.id} value={city.id}>
+                                                                    {city.name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            onClick={() => remove(index)}
+                                                            disabled={loading}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                                <Button type="button" onClick={() => append(cities[0].id)} disabled={loading}>
+                                    Add Stop
+                                </Button>
+                            </>
                         )}
                     />
-                    </div>
-                    <div className="space-y-4">
-                        <FormLabel>Stops</FormLabel>
-                        {fields.map((item, index) => (
-                        <div key={item.id} className="flex items-center space-x-4">
-                            <FormField
-                                control={form.control}
-                                name={`stops.${index}.cityId`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <Select
-                                            disabled={loading}
-                                            onValueChange={field.onChange}
-                                            value={field.value}
-                                            defaultValue={initialData?.stops[index]?.toString() || field.value}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select a stop city" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {cities && cities.map(city => (
-                                                    <SelectItem key={city.id} value={city.id}>
-                                                        {city.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Button type="button" variant="destructive" onClick={() => remove(index)} disabled={loading}>
-                                Remove
-                            </Button>
-                        </div>
-                    ))}
-                    <Button type="button" onClick={() => append({ cityId: "" })} disabled={loading}>
-                        Add Stop
-                    </Button>
-
                     </div>
 
                     <FormField
@@ -282,10 +299,10 @@ export const RouteForm: React.FC<SettingsFromProps> = ({
                             </FormItem>
                         )}
                     />
-                    
+
                     <Button disabled={loading} className='ml-auto' type='submit'>{action}</Button>
                 </form>
             </Form>
         </>
     );
-}
+};

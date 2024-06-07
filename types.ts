@@ -22,9 +22,6 @@ export interface City {
   
 export interface Stop {
     id: string;
-    routeId: string;
     cityId: string;
-    order: number;
-    createdAt: Date;
 }
   
