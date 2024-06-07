@@ -65,6 +65,8 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
         }
     });
 
+    const defaultStops = initialData.stops;
+
     const { control, setValue } = form;
 
     const [stopValue, setStopValue] = useState('')
@@ -221,7 +223,7 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
                                             <TableRow key={`stops.${index}`}>
                                                 <TableCell>{index + 1}</TableCell>
                                                 <TableCell>
-                                                    {cities.find(city => city.id === stop)?.name }
+                                                    {cities.find(city => city.id === defaultStops[index])?.name }
                                                 </TableCell>
                                                 <TableCell>
                                                     <Select

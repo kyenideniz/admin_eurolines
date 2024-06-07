@@ -31,7 +31,7 @@ export const CityClient: React.FC<CityClientProps> = ({
                 </Button>
             </div>
             <Separator />
-            <DataTable columns={columns} data={data} searchKey="value" />
+            <DataTable columns={columns} data={data} searchKey="createdAt" />
             <Heading title="API" description="API calls for Cities" />
             <Separator />
             <ApiList entityName="cities" entityIdName="cityId" />

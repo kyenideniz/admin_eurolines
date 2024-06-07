@@ -26,6 +26,7 @@ const formSchema = z.object({
     name: z.string().min(1),
     value: z.string().min(1),
     isOffered: z.boolean().default(false),
+    price: z.number().optional(),
 });
 
 type CityFormValues = z.infer<typeof formSchema>;
@@ -49,6 +50,7 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
             name: '',
             value: '',
             isOffered: false,
+            price: 0,
         }
     });
 
@@ -76,7 +78,6 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
         }
     };
 
-
     const onSubmit = async (data: CityFormValues) => {
         try {
             setLoading(true);
@@ -84,6 +85,8 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
             formData.append('name', data.name);
             formData.append('value', data.value);
             formData.append('isOffered', data.isOffered.toString());
+            formData.append('price', (data.price ?? 0).toString());
+            
             if (file) {
                 formData.append('file', file);
             }
@@ -173,7 +176,7 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
                                 <FormItem>
                                     <FormLabel>City Name</FormLabel>
                                     <FormControl>
-                                        <Input disabled={loading} placeholder='City name' {...field} />
+                                        <Input type="text" disabled={loading} placeholder='City name' {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -186,7 +189,26 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
                                 <FormItem>
                                     <FormLabel>City Value</FormLabel>
                                     <FormControl>
-                                        <Input disabled={loading} placeholder='City value' {...field} />
+                                        <Input type='text' disabled={loading} placeholder='City value' {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control} 
+                            name="price"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Offer Price</FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            type='number'
+                                            disabled={loading}
+                                            placeholder='Offer price'
+                                            value={field.value ?? ""}
+                                            onChange={(e) => field.onChange(e.target.value === "" ? undefined : parseFloat(e.target.value))}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

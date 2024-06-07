@@ -1,9 +1,7 @@
 import { db, storage } from '@/firebaseConfig';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-
-import { NextResponse } from "next/server"
-
+import { NextResponse } from "next/server";
 
 export async function GET(
     req: Request,
@@ -17,12 +15,12 @@ export async function GET(
         });
 
         return NextResponse.json(cities);
-
     } catch (err) {
         console.log(`[CITIES_GET] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500})
+        return new NextResponse(`Internal error`, { status: 500 });
     }
 }
+
 export async function PATCH(
     req: Request,
     { params }: { params: { cityId: string } }
@@ -32,7 +30,8 @@ export async function PATCH(
 
         const name = formData.get('name') as string;
         const value = formData.get('value') as string;
-        const isOffered = formData.get('isOffered') === 'true';
+        const isOffered = formData.get('isOffered') === 'true'; // assuming the value 'true' means true, otherwise use 'false' 
+        const priceValue = formData.get('price');
         const file = formData.get('file') as File | null;
 
         if (!name) {
@@ -47,6 +46,13 @@ export async function PATCH(
             return new NextResponse("City id is required", { status: 400 });
         }
 
+        // Convert price to number
+        const price = priceValue ? parseFloat(priceValue.toString()) : null;
+
+        if (price === null || isNaN(price)) {
+            return new NextResponse("Valid price is required", { status: 400 });
+        }
+
         const cityDocRef = doc(db, 'cities', params.cityId);
 
         if (file) {
@@ -58,13 +64,15 @@ export async function PATCH(
                 name,
                 value,
                 isOffered,
-                url: fileUrl
+                url: fileUrl,
+                price
             });
         } else {
             await updateDoc(cityDocRef, {
                 name,
                 value,
-                isOffered
+                isOffered,
+                price
             });
         }
 
@@ -75,10 +83,9 @@ export async function PATCH(
     }
 }
 
-//// Delete Method
-export async function DELETE (
+export async function DELETE(
     req: Request,
-    { params }: { params: { cityId: string }}
+    { params }: { params: { cityId: string } }
 ) {
     try {
         if (!params.cityId) {
@@ -86,7 +93,7 @@ export async function DELETE (
         }
 
         const cityDocRef = doc(db, 'cities', params.cityId);
-        
+
         await deleteDoc(cityDocRef);
 
         return new NextResponse(JSON.stringify({ message: 'City deleted successfully' }), { status: 200 });

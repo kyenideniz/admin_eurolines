@@ -19,6 +19,7 @@ const CityPage = async ({ params }: { params: { cityId: string } }) => {
             value: cityData.value,
             url: cityData.url,
             isOffered: cityData.isOffered,
+            price: cityData.price,
         };
 
         return(

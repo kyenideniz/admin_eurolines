@@ -18,6 +18,7 @@ export interface City {
     value: string;
     url: string;
     isOffered: boolean;
+    price?: number;
 }
   
 export interface Stop {

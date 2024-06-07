@@ -61,6 +61,30 @@ export async function POST(
 
 export async function GET(req: Request) {
     try {
+        const { searchParams } = new URL(req.url);
+
+        // Convert the iterator to an array
+        const queryParamsArray = Array.from(searchParams.entries());
+
+        // Dynamic filter function
+        const filterRoutes = (routeData: any) => {
+            for (const [key, value] of queryParamsArray) {
+                if (key === 'price') {
+                    // Convert query parameter value to number
+                    const queryValue = Number(value);
+                    if (routeData[key] !== queryValue) {
+                        return false; // Skip if route does not match query parameter
+                    }
+                } else {
+                    // For other parameters, check for partial match
+                    if (!routeData[key]?.includes(value)) {
+                        return false; // Skip if route does not match query parameter
+                    }
+                }
+            }
+            return true; // Include route if it matches all query parameters
+        };
+
         const querySnapshot = await getDocs(collection(db, 'routes'));
         const routes: any[] = [];
 
@@ -72,6 +96,11 @@ export async function GET(req: Request) {
                 day = day.toDate(); // Convert Firestore Timestamp to JavaScript Date
             }
 
+            // Filter based on query parameters
+            if (!filterRoutes(routeData)) {
+                return; // Skip if route does not match any query parameter
+            }
+
             routes.push({
                 id: doc.id,
                 day,
@@ -81,6 +110,10 @@ export async function GET(req: Request) {
                 stops: routeData.stops, // Assuming stops is an array
             });
         });
+
+        // Log query parameters and filtered routes
+        console.log('Query Parameters:', queryParamsArray);
+        console.log('Filtered Routes:', routes);
 
         return NextResponse.json(routes);
     } catch (err) {
