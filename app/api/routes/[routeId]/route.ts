@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { db } from '@/firebaseConfig';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc, collection, query, getDocs } from 'firebase/firestore';
 
 export async function GET (
     req: Request,
@@ -65,7 +65,6 @@ export async function PATCH(
 }
 
 //// Delete Method
-
 export async function DELETE (
     req: Request,
     { params }: { params: { routeId: string }}
@@ -76,12 +75,16 @@ export async function DELETE (
         }
 
         const routeDocRef = doc(db, 'routes', params.routeId);
-        const routeSnapshot = await getDoc(routeDocRef);
 
-        if (!routeSnapshot.exists()) {
-            return new NextResponse("Route not found", { status: 404 });
-        }
+        // Delete the seats subcollection in routes
+        const seatsCollectionRef = collection(routeDocRef, 'seats');
+        const seatsQuery = query(seatsCollectionRef);
+        const seatsSnapshot = await getDocs(seatsQuery);
+        seatsSnapshot.forEach(async (seatDoc) => {
+            await deleteDoc(seatDoc.ref);
+        });
 
+        // After deleting seats, delete the route itself
         await deleteDoc(routeDocRef);
 
         return NextResponse.json({ message: "Route deleted successfully" });
