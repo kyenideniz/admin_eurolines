@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server"
 import { db } from '@/firebaseConfig';
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, QueryDocumentSnapshot } from 'firebase/firestore';
-import { v4 as uuidv4 } from 'uuid';
-import { Stop } from "@/types";
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export async function GET (
     req: Request,

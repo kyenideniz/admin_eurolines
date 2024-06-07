@@ -68,7 +68,6 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
     const { control, setValue } = form;
 
     const [stopValue, setStopValue] = useState('')
-    const [stopSelectValue, setStopSelectValue] = useState('')
 
     // Use the useFieldArray hook to manage the stops array
     const { fields, append, remove } = useFieldArray({
@@ -78,7 +77,6 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
 
     const onSubmit = async (data: RouteFormValues) => {
         try {
-            console.log(form.getValues("stops"))
             setLoading(true);
             const updatedData = {
                 ...data,
