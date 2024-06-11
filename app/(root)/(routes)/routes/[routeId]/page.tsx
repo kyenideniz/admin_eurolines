@@ -1,12 +1,13 @@
 import { RouteForm } from "./components/route-form";
 import { db } from '@/firebaseConfig'
+import { Route } from "@/types";
 import { doc, getDoc, collection, query, orderBy, getDocs } from 'firebase/firestore';
 
 const RoutePage = async ({ params }: { params: { routeId: string } }) => {
     // Fetch route data from Firestore
     const routeDocRef = doc(db, 'routes', params.routeId);
     const routeDocSnapshot = await getDoc(routeDocRef);
-    let route: any | null = null;
+    let route: Route | null = null;
 
     if (routeDocSnapshot.exists()) {
         const routeData = routeDocSnapshot.data();
@@ -20,7 +21,7 @@ const RoutePage = async ({ params }: { params: { routeId: string } }) => {
             emptySeats: routeData.emptySeats,
             occupiedSeats: routeData.occupiedSeats,
             createdAt: routeData.createdAt, // Convert Firestore Timestamp to Date
-            stops: routeData.stops // Assuming each stop object has a cityId field
+            stops: routeData.stops ? routeData.stops : null // Assuming each stop object has a cityId field
         };
     }
 

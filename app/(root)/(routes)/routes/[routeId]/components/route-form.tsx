@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Heading } from "@/components/ui/heading";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { City } from "@/types";
 
 interface RouteFormProps {
     initialData: any;
@@ -37,7 +38,6 @@ const formSchema = z.object({
 type RouteFormValues = z.infer<typeof formSchema>;
 
 export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => {
-
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -61,11 +61,15 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
             startCityId: '',
             endCityId: '',
             price: 1,
-            stops: [],
+            stops: [""],
         }
     });
 
-    const defaultStops = initialData.stops;
+    let defaultStops: City[] = [];
+
+    if(initialData?.stops){
+        defaultStops = initialData.stops;
+    }
 
     const { control, setValue } = form;
 
