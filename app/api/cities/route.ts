@@ -97,7 +97,7 @@ export async function GET(
             const year = date.getFullYear();
 
             const city = {
-                docId: cityData.id,
+                docId: doc.id,
                 id: doc.id,
                 ...cityData,
                 createdAt: `${month} ${year}`,
