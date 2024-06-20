@@ -107,8 +107,8 @@ export async function GET(
         });
 
         // Log query parameters and filtered cities
-        console.log('Query Parameters:', queryParamsArray);
-        console.log('Filtered Cities:', cities);
+        //console.log('Query Parameters:', queryParamsArray);
+        //console.log('Filtered Cities:', cities);
 
         return NextResponse.json(cities);
 

@@ -9,7 +9,6 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 export default function Home() {
   const [value, setValue] = React.useState<Dayjs | null>(dayjs(new Date()));
-  console.log(value?.toString());
 
   return(
     <div>

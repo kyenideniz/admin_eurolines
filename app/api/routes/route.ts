@@ -112,8 +112,8 @@ export async function GET(req: Request) {
         });
 
         // Log query parameters and filtered routes
-        console.log('Query Parameters:', queryParamsArray);
-        console.log('Filtered Routes:', routes);
+        //console.log('Query Parameters:', queryParamsArray);
+        //console.log('Filtered Routes:', routes);
 
         return NextResponse.json(routes);
     } catch (err) {
