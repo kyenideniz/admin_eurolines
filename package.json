@@ -9,8 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^5.1.6",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@google-cloud/firestore": "^7.8.0",
     "@hookform/resolvers": "^3.4.2",
     "@mui/material": "^5.15.19",
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
@@ -28,12 +30,15 @@
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",
+    "clerk": "^0.6.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.11",
     "firebase": "^10.12.2",
+    "firebase-admin": "^12.2.0",
     "lucide-react": "^0.381.0",
     "next": "14.2.3",
+    "next-themes": "^0.3.0",
     "prisma": "^5.15.0",
     "query-string": "^9.0.0",
     "rc-time-picker": "^3.7.3",
@@ -46,7 +51,8 @@
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/node": "^20",

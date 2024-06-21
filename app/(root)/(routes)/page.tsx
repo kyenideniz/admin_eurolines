@@ -1,20 +1,20 @@
 "use client"
-import React, { useState } from 'react';
 
-import dayjs, { Dayjs } from 'dayjs';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { useStoreModal } from '@/hooks/use-store-modal';
+import { useEffect } from 'react' 
 
+const SetupPage = () => {
 
-export default function Home() {
-  const [value, setValue] = React.useState<Dayjs | null>(dayjs(new Date()));
+  const onOpen =  useStoreModal(state => state.onOpen);
+  const isOpen =  useStoreModal(state => state.isOpen);
 
-  return(
-    <div>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DateTimePicker defaultValue={dayjs(new Date())} value={value} onChange={(newValue) => setValue(newValue)} ampm={false} disablePast={true} views={['year', 'day', 'hours', 'minutes', 'seconds']} />
-      </LocalizationProvider>
-    </div>
-  );
+  useEffect(() => {
+    if (!isOpen) {
+      onOpen();
+    }
+  }, [isOpen, onOpen]);
+
+  return null;
 }
+
+export default SetupPage;
