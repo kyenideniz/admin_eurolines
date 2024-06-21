@@ -6,7 +6,11 @@ import { CityColumn } from './components/columns'
 
 export const revalidate = 0;
 
-const CitiesPage = async () => {
+const CitiesPage = async ({ 
+    params
+}: { 
+    params: { storeId: string }
+}) => {
     try {
         // Firestore query to get cities ordered by creation date
         const citiesCollection = collection(db, 'cities');

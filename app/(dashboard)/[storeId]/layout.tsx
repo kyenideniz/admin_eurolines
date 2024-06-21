@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation"
-import { MainNav } from "@/components/main-nav";
+import Navbar  from "@/components/navbar";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from '@/firebaseConfig';
 
@@ -35,7 +35,7 @@ export default async function Dashboard({children, params}: DashboardType) {
 
     return (
         <>
-            <MainNav/>
+            <Navbar/>
             {children}
         </>
     )
