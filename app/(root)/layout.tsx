@@ -15,19 +15,13 @@ export default async function SetupLayout({ children }: DashboardType) {
     if (!userId) {
         redirect('/sign-in');
     }
-    try {
-        const querySnapshot = await getDocs(collection(db, 'stores'));
-    
-        const storeDoc = querySnapshot.docs[0];
-        
-        if (storeDoc) {
-            redirect(`/${storeDoc.id}`);
-        }
 
-    } catch (error) {
-        console.log(error)
+    const querySnapshot = await getDocs(collection(db, 'stores'));
+    const storeDoc = querySnapshot.docs;
+    console.log(storeDoc)
+    if (storeDoc[0]){
+        redirect(`/${storeDoc[0].id}`);
     }
-    
 
     return (
         <>
