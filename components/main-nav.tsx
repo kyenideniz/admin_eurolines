@@ -10,17 +10,17 @@ export function MainNav({ className, ...props } : React.HTMLAttributes<HTMLEleme
     const params = useParams();
 
     const routes = [{
-        href: `/`,
+        href: `/${params.storeId}`,
         label: 'Overview',
-        active: pathname === `/`
+        active: pathname === `/${params.storeId}`
     },{
-        href: `${params.storeId}/cities`,
+        href: `/${params.storeId}/cities`,
         label: 'Cities',
-        active: pathname === `/cities`
+        active: pathname === `/${params.storeId}/cities`
     },{
-        href: `${params.storeId}/routes`,
+        href: `/${params.storeId}/routes`,
         label: 'Routes',
-        active: pathname === `/routes`
+        active: pathname === `${params.storeId}/routes`
     },];
 
     return (
