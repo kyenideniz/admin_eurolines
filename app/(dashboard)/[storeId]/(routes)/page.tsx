@@ -4,7 +4,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/firebaseConfig';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CreditCard, DollarSign, Package } from "lucide-react";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Overview } from "@/components/overview";
+import { getGraphRevenue } from "@/actions/get-graph-revenue";
 
 interface DashboardPageProps {
   params: { storeId: string }
@@ -14,6 +15,8 @@ const DashboardPage: React.FC<DashboardPageProps> = async ({ params }) => {
   const docRef = doc(db, 'stores', params.storeId);
   const docSnap = await (await getDoc(docRef)).data();
 
+  const graphRevenue = await getGraphRevenue(params.storeId);
+  
   if (!docSnap) {
     return (
       <div className="flex-col">
@@ -74,9 +77,9 @@ const DashboardPage: React.FC<DashboardPageProps> = async ({ params }) => {
           <CardHeader>
             <CardTitle>Overview</CardTitle>
           </CardHeader>
-          <CardContent className="pl-2">
-           
-          </CardContent>
+            <CardContent className="pl-2 h-full">
+              <Overview data={graphRevenue} />
+            </CardContent>
         </Card>
       </div>
     </div>
