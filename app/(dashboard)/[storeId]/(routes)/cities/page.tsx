@@ -3,7 +3,6 @@ import { db } from '@/lib/firebase/firebaseConfig'; // Ensure you have this file
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { CityColumn } from './components/columns';
 import { CityClient } from './components/client';
-import { firestore } from 'firebase-admin';
 import { ErrorClient } from './components/errorClient';
 
 export const revalidate = 0;
@@ -29,7 +28,7 @@ const CitiesPage = async ({
                 id: doc.id,
                 name: cityData.name,
                 value: cityData.value,
-                url: cityData.url ? "Yes" : "No",
+                hasImage: cityData.url ? "Yes" : "No",
                 isOffered: cityData.isOffered ? "Yes" : "No",
                 createdAt: format(cityData.createdAt.toDate(), "MMMM do, yyyy"), // Convert Firestore Timestamp to JavaScript Date
             });
