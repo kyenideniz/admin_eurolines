@@ -89,6 +89,12 @@ export async function GET(req: Request, { params }: { params: { storeId: string 
                     if (cityData[key] !== queryValue) {
                         return false; // Skip if city does not match query parameter
                     }
+                } else if (key === 'isOffered') {
+                    // Convert query parameter value to boolean
+                    const queryValue = value === 'true';
+                    if (cityData[key] !== queryValue) {
+                        return false; // Skip if city does not match query parameter
+                    }
                 } else {
                     // For other parameters, check for partial match
                     const cityValue = cityData[key];
