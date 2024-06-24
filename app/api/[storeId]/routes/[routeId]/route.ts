@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { db } from '@/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc, collection, query, getDocs } from 'firebase/firestore';
+import { admin } from '@/lib/firebase/firebaseAdmin';
+import { auth as clerkAuth } from "@clerk/nextjs/server";
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
 
 export async function GET (
     req: Request,
@@ -32,9 +35,32 @@ export async function GET (
 
 export async function PATCH(
     req: Request,
-    { params }: { params: { routeId: string } }
-) {
+    { 
+        params 
+    }: { 
+    params: { storeId: any; routeId: string } 
+}) {
     try {
+        const auth = getAuth();
+
+        const { userId } = clerkAuth();
+        
+        if (!userId) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const customToken = await admin.auth().createCustomToken(userId);
+        
+        await signInWithCustomToken(auth, customToken).then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log("signed in");
+        }).catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage);
+        });
+
         const body = await req.json();
         const { day, startCityId, endCityId, price, stops } = body;
 
@@ -42,7 +68,7 @@ export async function PATCH(
             return new NextResponse("Invalid data provided", { status: 400 });
         }
 
-        const routeDocRef = doc(db, 'routes', params.routeId);
+        const routeDocRef = doc(db, `stores/${params.storeId}/routes`, params.routeId);
         const routeSnapshot = await getDoc(routeDocRef);
 
         if (!routeSnapshot.exists()) {
@@ -67,22 +93,42 @@ export async function PATCH(
 //// Delete Method
 export async function DELETE (
     req: Request,
-    { params }: { params: { routeId: string }}
+    { params }: { params: { routeId: string, storeId: string }}
 ) {
     try {
+        const auth = getAuth();
+
+        const { userId } = clerkAuth();
+        
+        if (!userId) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+    
         if (!params.routeId) {
             return new NextResponse("Route id is required", { status: 400 });
         }
 
-        const routeDocRef = doc(db, 'routes', params.routeId);
+        const customToken = await admin.auth().createCustomToken(userId);
+        
+        await signInWithCustomToken(auth, customToken).then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log("signed in")
+        }).catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage)
+        });
 
-        // Delete the seats subcollection in routes
+        const routeDocRef = doc(db, `stores/${params.storeId}/routes`, params.routeId);
+
+        /*/ Delete the seats subcollection in routes
         const seatsCollectionRef = collection(routeDocRef, 'seats');
         const seatsQuery = query(seatsCollectionRef);
         const seatsSnapshot = await getDocs(seatsQuery);
         seatsSnapshot.forEach(async (seatDoc) => {
             await deleteDoc(seatDoc.ref);
-        });
+        });*/
 
         // After deleting seats, delete the route itself
         await deleteDoc(routeDocRef);

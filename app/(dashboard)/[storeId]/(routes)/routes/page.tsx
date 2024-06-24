@@ -1,16 +1,21 @@
 import { RouteClient } from './components/client';
-import { RouteColumn } from './components/columns';
-import { collection, getDocs, doc } from 'firebase/firestore';
+import { collection, getDocs, doc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { db } from '@/firebaseConfig';
-import { Timestamp } from 'firebase/firestore';
 
 export const revalidate = 0; 
 
-const RoutesPage = async () => {
+const RoutesPage = async ({
+    params
+}: {
+    params: { storeId: string }
+}) => {
     try {
         // Fetch cities data
-        const cityQuerySnapshot = await getDocs(collection(db, 'cities'));
+        const citiesCollectionRef = collection(db, `stores/${params.storeId}/cities`);
+        const cityQuery = query(citiesCollectionRef, orderBy('createdAt', 'desc'));
+        
+        const cityQuerySnapshot = await getDocs(cityQuery);
         const cities: { [id: string]: string } = {}; // Map to store city ID and name
 
         cityQuerySnapshot.forEach((cityDoc) => {
@@ -19,7 +24,7 @@ const RoutesPage = async () => {
         });
 
         // Fetch routes data
-        const querySnapshot = await getDocs(collection(db, 'routes'));
+        const querySnapshot = await getDocs(collection(db, `stores/${params.storeId}/routes`));
         const formattedRoutes: any[] = [];
 
         for (const routeDoc of querySnapshot.docs) {

@@ -133,7 +133,6 @@ export async function DELETE(
             return new NextResponse("City id is required", { status: 400 });
         }
 
-
         const customToken = await admin.auth().createCustomToken(userId);
         
         await signInWithCustomToken(auth, customToken).then((userCredential) => {
@@ -146,7 +145,6 @@ export async function DELETE(
             console.log(errorCode, errorMessage)
         });
         
-
         const cityDocRef = doc(db, `stores/${params.storeId}/cities`, params.cityId);
         const cityDoc = await getDoc(cityDocRef);
 

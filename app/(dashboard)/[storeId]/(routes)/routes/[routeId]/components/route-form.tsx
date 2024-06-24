@@ -94,7 +94,7 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
                 await axios.post(`/api/${params.storeId}/routes`, updatedData);
             }
             router.refresh();
-            router.push(`${params.storeId}/routes`);
+            router.push(`/${params.storeId}/routes`);
             toast.success(toastMessage);
         } catch (err) {
             toast.error("Something went wrong.");

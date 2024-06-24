@@ -1,13 +1,36 @@
 import { NextResponse } from "next/server";
 import { db } from '@/firebaseConfig';
-import { collection, addDoc, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, getDoc, orderBy, query  } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
+import { auth as clerkAuth } from "@clerk/nextjs/server";
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
+import { admin } from "@/lib/firebase/firebaseAdmin";
 
 export async function POST(
     req: Request,
     { params }: { params: { storeId: string } }
 ) {
     try {
+        const auth = getAuth();
+
+        const { userId } = clerkAuth();
+        
+        if (!userId) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+        
+        const customToken = await admin.auth().createCustomToken(userId);
+        
+        await signInWithCustomToken(auth, customToken).then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log("signed in")
+        }).catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage)
+        });
+
         const body = await req.json();
         const { day, startCityId, endCityId, price, stops } = body;
 
@@ -19,7 +42,9 @@ export async function POST(
         const formattedDay = new Date(day).toISOString(); 
 
         // Create a new route document with stops as an array
-        const routeRef = await addDoc(collection(db, 'routes'), {
+        const storeRef = await admin.firestore().collection('stores').doc(params.storeId);
+        const routesCollectionRef = storeRef.collection('routes');
+        const route = await routesCollectionRef.add({
             day: formattedDay,
             startCityId,
             endCityId,
@@ -27,9 +52,9 @@ export async function POST(
             stops,
         });
 
-        const routeId = routeRef.id; // Get the ID of the newly created route
+        const routeId = route.id; // Get the ID of the newly created route
 
-        // Create seats subcollection for the route
+        /*/ Create seats subcollection for the route
         const seatsData = Array.from({ length: 55 }, (_, i) => ({
             seatId: uuidv4(),
             seatNumber: i + 1,
@@ -38,8 +63,8 @@ export async function POST(
         }));
 
         for (const seat of seatsData) {
-            await addDoc(collection(routeRef, 'seats'), seat);
-        }
+            await addDoc(collection(routesCollectionRef, 'seats'), seat);
+        }*/
 
         // Return the newly created route data
         const newRoute = {
@@ -49,7 +74,7 @@ export async function POST(
             endCityId,
             price,
             stops,
-            seats: seatsData,
+            //seats: seatsData,
         };
 
         return NextResponse.json(newRoute);
@@ -59,7 +84,7 @@ export async function POST(
     }
 }
 
-export async function GET(req: Request) {
+export async function GET(req: Request, { params }: { params: { storeId: string }} ) {
     try {
         const { searchParams } = new URL(req.url);
 
@@ -85,7 +110,7 @@ export async function GET(req: Request) {
             return true; // Include route if it matches all query parameters
         };
 
-        const querySnapshot = await getDocs(collection(db, 'routes'));
+        const querySnapshot = await getDocs(collection(db, `stores/${params.storeId}/routes`));
         const routes: any[] = [];
 
         querySnapshot.forEach((doc) => {

@@ -30,7 +30,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`/api/routes/${data.id}`)
+            await axios.delete(`/api/${params.storeId}/routes/${data.id}`)
             router.refresh();
             toast.success("Route deleted successfully.")
         } catch {

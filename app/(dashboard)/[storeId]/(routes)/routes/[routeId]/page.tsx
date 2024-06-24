@@ -3,9 +3,9 @@ import { db } from '@/firebaseConfig'
 import { Route } from "@/types";
 import { doc, getDoc, collection, query, orderBy, getDocs } from 'firebase/firestore';
 
-const RoutePage = async ({ params }: { params: { routeId: string } }) => {
+const RoutePage = async ({ params }: { params: { routeId: string, storeId: string } }) => {
     // Fetch route data from Firestore
-    const routeDocRef = doc(db, 'routes', params.routeId);
+    const routeDocRef = doc(db, 'stores', params.storeId, 'routes', params.routeId);
     const routeDocSnapshot = await getDoc(routeDocRef);
     let route: Route | null = null;
 
@@ -26,8 +26,11 @@ const RoutePage = async ({ params }: { params: { routeId: string } }) => {
     }
 
     // Fetch cities data from Firestore
-    const citiesQuery = query(collection(db, 'cities'), orderBy('createdAt', 'desc'));
+    const citiesCollectionRef = collection(db, `stores/${params.storeId}/cities`);
+    const citiesQuery = query(citiesCollectionRef, orderBy('createdAt', 'desc'));
+
     const citiesQuerySnapshot = await getDocs(citiesQuery);
+
     const cities = citiesQuerySnapshot.docs.map(doc => {
         const data = doc.data();
         return {
