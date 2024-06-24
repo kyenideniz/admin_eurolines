@@ -29,13 +29,15 @@ interface DataTableProps<TData, TValue> {
   data: TData[],
   searchKey: string,
   fetchClick: () => Promise<void>,
+  loading: boolean,
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   searchKey,
-  fetchClick
+  fetchClick,
+  loading,
 }: DataTableProps<TData, TValue>) {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -60,8 +62,9 @@ export function DataTable<TData, TValue>({
           value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
           onChange={event => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
           className="max-w-sm"
+          disabled={loading}
         />
-        <Button variant="outline" onClick={fetchClick}>
+        <Button variant="outline" onClick={fetchClick} disabled={loading}>
             <RefreshCw className="w-4 h-4" />
         </Button>
       </div>

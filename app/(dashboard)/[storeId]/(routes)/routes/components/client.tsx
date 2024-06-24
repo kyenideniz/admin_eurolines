@@ -74,9 +74,19 @@ export const RouteClient: React.FC<RouteClientProps> = ({
         }
     }
 
-    if(loading){
-        return <div className="h-full w-full items-center justify-center flex">Reloading...</div>
-    }
+    useEffect(() => {
+        if (loading) {
+            const errorTable: RouteColumn[] = [{
+                id: "Loading...",
+                day: "Loading...",
+                time: "Loading...",
+                startCity: "Loading...",
+                endCity: "Loading...",
+                price: 0,
+            }];
+            setTableData(errorTable);
+        }
+    }, [loading]);
 
     return (
         <>
@@ -90,7 +100,7 @@ export const RouteClient: React.FC<RouteClientProps> = ({
                 </Button>
             </div>
             <Separator />
-            <DataTable columns={columns} data={tableData} searchKey="startCity" fetchClick={handleClick} />
+            <DataTable columns={columns} data={tableData} searchKey="startCity" fetchClick={handleClick} loading={loading} />
             <Heading title="API" description="API calls for Routes" />
             <Separator />
             <ApiList entityName={`${params.storeId}/routes`} entityIdName="routeId" />

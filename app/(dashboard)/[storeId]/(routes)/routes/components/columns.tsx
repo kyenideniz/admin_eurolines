@@ -9,7 +9,7 @@ export type RouteColumn = {
     time: string;
     startCity: string; // Assuming startCity is the name of the city
     endCity: string; // Assuming endCity is the name of the city
-    stops: Stop; // Array of strings representing city names
+    stops?: Stop; // Array of strings representing city names
     price: number;
 }
 

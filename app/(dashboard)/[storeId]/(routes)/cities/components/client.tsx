@@ -10,6 +10,7 @@ import { DataTable } from "@/components/ui/data-table"
 import { ApiList } from "@/components/ui/api-list"
 import getCities from "@/actions/get-cities"
 import { useEffect, useState } from "react"
+import { format } from "date-fns"
 
 interface CityClientProps {
     data: CityColumn[],
@@ -35,18 +36,38 @@ export const CityClient: React.FC<CityClientProps> = ({
     const handleClick = async () => {
         setLoading(true);
         refreshData = await getCities( {}, url );
-        
+
+        const formattedCities: any[] = refreshData.map((routeDoc: any) => {
+            return{
+                id: routeDoc.id,
+                name: routeDoc.name,
+                value: routeDoc.value,
+                hasImage: routeDoc.url ? "Yes" : "No",
+                isOffered: routeDoc.isOffered ? "Yes" : "No",
+                createdAt: format(routeDoc.createdAt, "MMMM do, yyyy"), // Convert Firestore Timestamp to JavaScript Date
+            };
+        });
+
         if(refreshData.length > 0){
-            setTableData(refreshData)
+            setTableData(formattedCities)
             setLoading(false);
         }else{
             setLoading(false);
         }
     }
 
-    if(loading){
-        return <div className="h-full w-full items-center justify-center flex">Reloading...</div>
-    }
+    useEffect(() => {
+        if (loading) {
+            const errorTable: CityColumn[] = [{
+                id: "Loading...",
+                name: "Loading...",
+                isOffered: "Loading...",
+                hasImage: "Loading...",
+                createdAt: "Loading...",
+            }];
+            setTableData(errorTable);
+        }
+    }, [loading]);
 
     return (
         <>
@@ -60,7 +81,7 @@ export const CityClient: React.FC<CityClientProps> = ({
                 </Button>
             </div>
             <Separator />
-            <DataTable columns={columns} data={tableData} searchKey="createdAt" fetchClick={handleClick} />
+            <DataTable columns={columns} data={tableData} searchKey="createdAt" fetchClick={handleClick} loading={loading} />
             <Heading title="API" description="API calls for Cities" />
             <Separator />
             <ApiList entityName={`${params.storeId}/cities`} entityIdName="cityId" />

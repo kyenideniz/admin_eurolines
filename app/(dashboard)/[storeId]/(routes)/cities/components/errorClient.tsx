@@ -9,7 +9,7 @@ import { CityColumn, columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { ApiList } from "@/components/ui/api-list"
 import getCities from "@/actions/get-cities"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 interface CityClientProps {
     data: CityColumn[],
@@ -22,6 +22,7 @@ export const ErrorClient: React.FC<CityClientProps> = ({
     const params = useParams();
 
     const [loading, setLoading] = useState(false);
+    const [tableData, setTableData] = useState<CityColumn[]>([]);
 
     const url = `/api/${params.storeId}/cities`
 
@@ -39,6 +40,19 @@ export const ErrorClient: React.FC<CityClientProps> = ({
             setLoading(false);
         }
     }
+
+    useEffect(() => {
+        if (loading) {
+            const errorTable: CityColumn[] = [{
+                id: "Loading...",
+                name: "Loading...",
+                isOffered: "Loading...",
+                hasImage: "Loading...",
+                createdAt: "Loading...",
+            }];
+            setTableData(errorTable);
+        }
+    }, [loading]);
     
     return (
         <>
@@ -52,7 +66,7 @@ export const ErrorClient: React.FC<CityClientProps> = ({
                 </Button>
             </div>
             <Separator />
-            <DataTable columns={columns} data={data} searchKey="createdAt" fetchClick={handleClick} />
+            <DataTable columns={columns} data={data} searchKey="createdAt" fetchClick={handleClick} loading={loading} />
             <Heading title="API" description="API calls for Cities" />
             <Separator />
             <ApiList entityName="cities" entityIdName="cityId" />
