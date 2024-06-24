@@ -91,8 +91,13 @@ export async function GET(req: Request, { params }: { params: { storeId: string 
                     }
                 } else {
                     // For other parameters, check for partial match
-                    if (!cityData[key]?.includes(value)) {
-                        return false; // Skip if city does not match query parameter
+                    const cityValue = cityData[key];
+                    if (typeof cityValue === 'string' || Array.isArray(cityValue)) {
+                        if (!cityValue.includes(value)) {
+                            return false; // Skip if city does not match query parameter
+                        }
+                    } else {
+                        return false; // Skip if city value is not a string or array
                     }
                 }
             }
