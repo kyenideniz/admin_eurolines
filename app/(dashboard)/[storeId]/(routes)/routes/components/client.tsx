@@ -64,7 +64,7 @@ export const RouteClient: React.FC<RouteClientProps> = ({
             <DataTable columns={columns} data={data} searchKey="startCity" fetchClick={handleClick} />
             <Heading title="API" description="API calls for Routes" />
             <Separator />
-            <ApiList entityName="routes" entityIdName="routeId" />
+            <ApiList entityName={`${params.storeId}/routes`} entityIdName="routeId" />
         </>
     )
 }

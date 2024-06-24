@@ -63,7 +63,7 @@ export const CityClient: React.FC<CityClientProps> = ({
             <DataTable columns={columns} data={data} searchKey="createdAt" fetchClick={handleClick} />
             <Heading title="API" description="API calls for Cities" />
             <Separator />
-            <ApiList entityName="cities" entityIdName="cityId" />
+            <ApiList entityName={`${params.storeId}/cities`} entityIdName="cityId" />
         </>
     )
 }

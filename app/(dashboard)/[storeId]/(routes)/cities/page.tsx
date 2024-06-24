@@ -5,7 +5,6 @@ import { CityColumn } from './components/columns';
 import { CityClient } from './components/client';
 import { firestore } from 'firebase-admin';
 import { ErrorClient } from './components/errorClient';
-import { handleClientScriptLoad } from 'next/script';
 
 export const revalidate = 0;
 
