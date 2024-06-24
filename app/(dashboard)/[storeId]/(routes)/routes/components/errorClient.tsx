@@ -5,14 +5,14 @@ import { Heading } from "@/components/ui/heading"
 import { Separator } from "@/components/ui/separator"
 import { RefreshCw } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
-import { CityColumn, columns } from "./columns"
+import { RouteColumn, columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { ApiList } from "@/components/ui/api-list"
-import getCities from "@/actions/get-cities"
+import getRoutes from "@/actions/get-routes"
 import { useState } from "react"
 
 interface CityClientProps {
-    data: CityColumn[],
+    data: RouteColumn[],
 }
 
 export const ErrorClient: React.FC<CityClientProps> = ({
@@ -23,14 +23,14 @@ export const ErrorClient: React.FC<CityClientProps> = ({
 
     const [loading, setLoading] = useState(false);
 
-    const url = `/api/${params.storeId}/cities`
+    const url = `/api/${params.storeId}/routes`
 
-    let refreshData: CityColumn[];
+    let refreshData: RouteColumn[];
 
     const handleClick = async () => {
         console.log("fetching cities...");
         setLoading(true);
-        refreshData = await getCities( {}, url );
+        refreshData = await getRoutes( {}, url );
         
         if(refreshData.length > 0){
             console.log("new cities fetched...", refreshData);
