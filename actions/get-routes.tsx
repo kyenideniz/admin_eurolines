@@ -1,7 +1,7 @@
-import { Route } from "@/types";
 import qs from 'query-string';
 
 interface Query {
+    id?: string;
     day?: string;
     startCityId?: string;
     endCityId?: string;
@@ -9,17 +9,23 @@ interface Query {
     price?: number;
 }
 
-const getRoutes = async (query: Query = {}, fetchURL: string): Promise<any> => {
-    
+const getRoutes = async (query: Query = {}, fetchURL: string, cities: { [id: string]: string } = {} ): Promise<any> => {
+
+    const queryObject = {
+        day: query.day,
+        startCity: query.startCityId,
+        endCity: query.endCityId,
+        stops: query.stopsId,
+        price: query.price,
+    }
+
+    const filteredQueryObject = Object.fromEntries(
+        Object.entries(queryObject).filter(([_, v]) => v !== undefined)
+    );
+
     const url = qs.stringifyUrl({
         url: fetchURL,
-        query: {
-            day: query.day,
-            startCityId: query.startCityId,
-            endCityId: query.endCityId,
-            stopsId: query.stopsId,
-            price: query.price,
-        }
+        query: filteredQueryObject
     });
 
     const res = await fetch(url);
@@ -30,6 +36,8 @@ const getRoutes = async (query: Query = {}, fetchURL: string): Promise<any> => {
     }
 
     const data = await res.json();
+    console.log(data);
+
     return data;
 }
 

@@ -9,7 +9,7 @@ import { CityColumn, columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { ApiList } from "@/components/ui/api-list"
 import getCities from "@/actions/get-cities"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 interface CityClientProps {
     data: CityColumn[],
@@ -22,9 +22,14 @@ export const CityClient: React.FC<CityClientProps> = ({
     const params = useParams();
 
     const [loading, setLoading] = useState(false);
+    const [tableData, setTableData] = useState<CityColumn[]>([]);
 
     const url = `/api/${params.storeId}/cities`
 
+    useEffect(() => {
+        setTableData(data);
+    }, []);
+    
     let refreshData: CityColumn[];
 
     const handleClick = async () => {
@@ -32,8 +37,7 @@ export const CityClient: React.FC<CityClientProps> = ({
         refreshData = await getCities( {}, url );
         
         if(refreshData.length > 0){
-            data = [];
-            data = refreshData;
+            setTableData(refreshData)
             setLoading(false);
         }else{
             setLoading(false);
@@ -48,7 +52,7 @@ export const CityClient: React.FC<CityClientProps> = ({
         <>
             <div className="flex items-center justify-between">
                 <Heading
-                    title={`Cities (${data?.length})`}
+                    title={`Cities (${tableData?.length})`}
                     description="Manage cities for your store"/>
                 <Button onClick={() => router.push(`/${params.storeId}/cities/new`)}>
                     <Plus className="w-4 h-4 mr-2" />
@@ -56,7 +60,7 @@ export const CityClient: React.FC<CityClientProps> = ({
                 </Button>
             </div>
             <Separator />
-            <DataTable columns={columns} data={data} searchKey="createdAt" fetchClick={handleClick} />
+            <DataTable columns={columns} data={tableData} searchKey="createdAt" fetchClick={handleClick} />
             <Heading title="API" description="API calls for Cities" />
             <Separator />
             <ApiList entityName={`${params.storeId}/cities`} entityIdName="cityId" />

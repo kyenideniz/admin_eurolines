@@ -10,7 +10,11 @@ import { RouteColumn, columns } from "./columns"
 import { DataTable } from "@/components/ui/data-table"
 import { ApiList } from "@/components/ui/api-list"
 import getRoutes from "@/actions/get-routes"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { format } from "date-fns"
+import { Timestamp } from "firebase/firestore"
+import getCities from "@/actions/get-cities"
+import { City } from "@/types"
 
 interface RouteClientProps {
     data: RouteColumn[];
@@ -23,18 +27,47 @@ export const RouteClient: React.FC<RouteClientProps> = ({
     const params = useParams();
 
     const [loading, setLoading] = useState(false);
+    const [tableData, setTableData] = useState<RouteColumn[]>([]);
 
-    const url = `/api/${params.storeId}/cities`
+    const url = `/api/${params.storeId}/routes`
 
-    let refreshData: RouteColumn[];
+    useEffect(() => {
+        setTableData(data);
+    }, []);
 
     const handleClick = async () => {
         setLoading(true);
-        refreshData = await getRoutes( {}, url );
+        const cities: any[] = await getCities( {}, `/api/${params.storeId}/cities` )
+
+        const refreshData: RouteColumn[] = await getRoutes( {}, url );
+
+        const formattedRoutes: any[] = refreshData.map((routeDoc: any) => {
+            const routeData = routeDoc;
+
+            // Convert routeData.day to a JavaScript Date object if it's a Firestore Timestamp
+            const day = routeData.day instanceof Timestamp ? routeData.day.toDate() : new Date(routeData.day);
+
+            // Find city names based on city IDs
+            const startCity = cities.find(city => city.id === routeData.startCityId)?.name || 'Unknown City';
+            const endCity = cities.find(city => city.id === routeData.endCityId)?.name || 'Unknown City';
+            const stops = routeData.stops.map((stopId: string) => cities.find(city => city.id === stopId)?.name || 'Unknown City');
+
+            return {
+                id: routeDoc.id,
+                day: format(day, 'PPP'),
+                time: format(day, 'p'),
+                startCity,
+                endCity,
+                stops,
+                price: Number(routeData.price),
+            };
+        });
+        
+        
+        console.log(formattedRoutes);
         
         if(refreshData.length > 0){
-            data = [];
-            data = refreshData;
+            setTableData(formattedRoutes)
             setLoading(false);
         }else{
             setLoading(false);
@@ -49,7 +82,7 @@ export const RouteClient: React.FC<RouteClientProps> = ({
         <>
             <div className="flex items-center justify-between">
                 <Heading
-                    title={`Routes (${data?.length})`}
+                    title={`Routes (${tableData?.length})`}
                     description="Manage routes for your store"/>
                 <Button onClick={() => router.push(`/${params.storeId}/routes/new`)}>
                     <Plus className="w-4 h-4 mr-2" />
@@ -57,7 +90,7 @@ export const RouteClient: React.FC<RouteClientProps> = ({
                 </Button>
             </div>
             <Separator />
-            <DataTable columns={columns} data={data} searchKey="startCity" fetchClick={handleClick} />
+            <DataTable columns={columns} data={tableData} searchKey="startCity" fetchClick={handleClick} />
             <Heading title="API" description="API calls for Routes" />
             <Separator />
             <ApiList entityName={`${params.storeId}/routes`} entityIdName="routeId" />
