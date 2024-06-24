@@ -1,4 +1,4 @@
-import { db } from '@/firebaseConfig'
+import { db } from '@/lib/firebase/firebaseConfig'
 import { collection, doc, getDoc } from 'firebase/firestore';
 import { CityForm } from './components/city-form';
 

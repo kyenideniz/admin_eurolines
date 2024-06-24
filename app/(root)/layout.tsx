@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { auth } from '@clerk/nextjs/server';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/firebaseConfig';
+import { db } from '@/lib/firebase/firebaseConfig';
 
 interface DashboardType {
     children: React.ReactNode;

@@ -1,5 +1,5 @@
 import { RouteForm } from "./components/route-form";
-import { db } from '@/firebaseConfig'
+import { db } from '@/lib/firebase/firebaseConfig'
 import { Route } from "@/types";
 import { doc, getDoc, collection, query, orderBy, getDocs } from 'firebase/firestore';
 

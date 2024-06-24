@@ -1,7 +1,7 @@
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebaseConfig';
+import { db } from '@/lib/firebase/firebaseConfig';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CreditCard, DollarSign, Package } from "lucide-react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';

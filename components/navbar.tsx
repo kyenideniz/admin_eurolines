@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserButton } from "@clerk/nextjs";
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/firebaseConfig';
+import { db } from '@/lib/firebase/firebaseConfig';
 
 interface Store {
     name: string,

@@ -1,5 +1,5 @@
 // POST function to add a document
-import { db, storage } from '@/firebaseConfig';
+import { db, storage } from '@/lib/firebase/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';

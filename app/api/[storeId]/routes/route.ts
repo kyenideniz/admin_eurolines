@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from '@/firebaseConfig';
+import { db } from '@/lib/firebase/firebaseConfig';
 import { collection, addDoc, getDocs, doc, getDoc, orderBy, query  } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { auth as clerkAuth } from "@clerk/nextjs/server";

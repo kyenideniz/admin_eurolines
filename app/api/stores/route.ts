@@ -1,9 +1,9 @@
 // pages/api/stores.js
 import { NextRequest, NextResponse } from "next/server";
-import { collection, addDoc } from "firebase/firestore";
-import { db } from '@/firebaseConfig';
+import { addDoc, collection } from "firebase/firestore";
+import { db } from '@/lib/firebase/firebaseConfig'; // Make sure this import is correct
 import { auth as clerkAuth } from "@clerk/nextjs/server";
-import { admin } from '@/lib//firebase/firebaseAdmin'; // Ensure this path is correct
+import { admin } from '@/lib/firebase/firebaseAdmin'; // Ensure this path is correct
 import { getAuth, signInWithCustomToken } from "firebase/auth";
 
 export async function POST(req: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        // Optionally, generate a Firebase custom token for the authenticated user
+        // Generate a Firebase custom token for the authenticated user
         const customToken = await admin.auth().createCustomToken(userId);
         
         await signInWithCustomToken(auth, customToken).then((userCredential) => {

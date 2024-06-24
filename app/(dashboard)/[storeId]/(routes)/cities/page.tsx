@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { db } from '@/firebaseConfig'; // Ensure you have this file configured as per your setup
+import { db } from '@/lib/firebase/firebaseConfig'; // Ensure you have this file configured as per your setup
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { CityColumn } from './components/columns';
 import { CityClient } from './components/client';

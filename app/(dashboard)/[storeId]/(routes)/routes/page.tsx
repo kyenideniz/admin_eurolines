@@ -1,7 +1,7 @@
 import { RouteClient } from './components/client';
 import { collection, getDocs, doc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
-import { db } from '@/firebaseConfig';
+import { db } from '@/lib/firebase/firebaseConfig';
 
 export const revalidate = 0; 
 
