@@ -32,12 +32,10 @@ const getCities = async (query: Query = {}, fetchURL: string): Promise<City[]> =
         query: filteredQueryObject
     });
 
-    //console.log('Fetching URL:', url);
     const res = await fetch(url);
 
     if (!res.ok) {
         const errorText = await res.text();
-        //console.log('Fetch error:', errorText);
         throw new Error(errorText);
     }
 
@@ -47,8 +45,6 @@ const getCities = async (query: Query = {}, fetchURL: string): Promise<City[]> =
     const cities = query.isOffered !== undefined
         ? data.filter((city: City) => city.isOffered === query.isOffered?.toString())
         : data;
-
-    //console.log('Fetch successful:', cities);
     return cities;
 }
 

@@ -28,18 +28,14 @@ export const ErrorClient: React.FC<CityClientProps> = ({
     let refreshData: CityColumn[];
 
     const handleClick = async () => {
-        console.log("fetching cities...");
         setLoading(true);
         refreshData = await getCities( {}, url );
         
         if(refreshData.length > 0){
-            console.log("new cities fetched...", refreshData);
             data = [];
             data = refreshData;
-            console.log("data set", data);
             setLoading(false);
         }else{
-            console.log("Fetch unsuccessfull")
             setLoading(false);
         }
     }

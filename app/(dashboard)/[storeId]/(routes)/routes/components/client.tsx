@@ -29,18 +29,14 @@ export const RouteClient: React.FC<RouteClientProps> = ({
     let refreshData: RouteColumn[];
 
     const handleClick = async () => {
-        console.log("fetching cities...");
         setLoading(true);
         refreshData = await getRoutes( {}, url );
         
         if(refreshData.length > 0){
-            console.log("new cities fetched...", refreshData);
             data = [];
             data = refreshData;
-            console.log("data set", data);
             setLoading(false);
         }else{
-            console.log("Fetch unsuccessfull")
             setLoading(false);
         }
     }
