@@ -18,8 +18,6 @@ export default async function SetupLayout({ children }: DashboardType) {
 
     const querySnapshot = await getDocs(collection(db, 'stores'));
     const storeDoc = querySnapshot.docs;
-    
-    console.log(storeDoc)
 
     if (storeDoc[0]){
         redirect(`/${storeDoc[0].id}`);

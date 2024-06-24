@@ -25,7 +25,7 @@ export const RouteClient: React.FC<RouteClientProps> = ({
                 <Heading
                     title={`Routes (${data?.length})`}
                     description="Manage routes for your store"/>
-                <Button onClick={() => router.push(`/routes/new`)}>
+                <Button onClick={() => router.push(`/${params.storeId}/routes/new`)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add New
                 </Button>

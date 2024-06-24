@@ -4,9 +4,12 @@ import { collection, addDoc } from "firebase/firestore";
 import { db } from '@/firebaseConfig';
 import { auth as clerkAuth } from "@clerk/nextjs/server";
 import { admin } from '@/lib//firebase/firebaseAdmin'; // Ensure this path is correct
+import { getAuth, signInWithCustomToken } from "firebase/auth";
 
 export async function POST(req: NextRequest) {
     try {
+        // Get Firebase Auth
+        const auth = getAuth();
         // Verify user authentication with Clerk
         const { userId } = clerkAuth();
 
@@ -16,6 +19,16 @@ export async function POST(req: NextRequest) {
 
         // Optionally, generate a Firebase custom token for the authenticated user
         const customToken = await admin.auth().createCustomToken(userId);
+        
+        await signInWithCustomToken(auth, customToken).then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log("signed in")
+        }).catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage)
+        });
 
         // Use the Firebase Admin SDK to interact with Firestore
         const body = await req.json();

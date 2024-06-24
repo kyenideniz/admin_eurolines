@@ -1,4 +1,4 @@
-"use Client"
+"use client"
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { CityColumn } from "./columns"
@@ -30,7 +30,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`/api/cities/${data.id}`)
+            await axios.delete(`/api/${params.storeId}/cities/${data.id}`)
             router.refresh();
             toast.success("City deleted successfully.")
         } catch {
@@ -63,7 +63,7 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
                         <Copy className="w-4 h-4 mr-2" />
                         Copy Id
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push(`/cities/${data.id}`)}>
+                    <DropdownMenuItem onClick={() => router.push(`/${params.storeId}/cities/${data.id}`)}>
                         <Edit className="w-4 h-4 mr-2" />
                         Update
                     </DropdownMenuItem>

@@ -1,15 +1,35 @@
+// POST function to add a document
 import { db, storage } from '@/firebaseConfig';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { NextResponse } from 'next/server';
-import { City } from '@/types';
+import { admin } from '@/lib/firebase/firebaseAdmin';
+import { auth as clerkAuth } from "@clerk/nextjs/server";
+import { getAuth, signInWithCustomToken } from 'firebase/auth';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
-export async function POST(
-    req: Request,
-    { params }: { params: { storeId: string } }
-) {
+export async function POST(req: Request, { params }: { params: { storeId: string } }) {
     try {
+        const auth = getAuth();
+
+        const { userId } = clerkAuth();
+        
+        if (!userId) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+        
+        const customToken = await admin.auth().createCustomToken(userId);
+        
+        await signInWithCustomToken(auth, customToken).then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            console.log("signed in")
+        }).catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage)
+        });
+
         const formData = await req.formData();
         const name = formData.get('name') as string;
         const value = formData.get('value') as string;
@@ -26,13 +46,16 @@ export async function POST(
         }
 
         let fileUrl = '';
-        if (file) {
-            const storageRef = ref(storage, `cities/${file.name}`);
+        if (file) {      
+            const storageRef = ref(storage, `${params.storeId}/cities/${uuidv4()}`);
             await uploadBytes(storageRef, file);
             fileUrl = await getDownloadURL(storageRef);
         }
 
-        const city = await addDoc(collection(db, 'cities'), {
+        // Ensure the collection reference is correctly structured
+        const storeRef = await admin.firestore().collection('stores').doc(params.storeId);
+        const citiesCollectionRef = storeRef.collection('cities');
+        const city = await citiesCollectionRef.add({
             id: uuidv4(),
             name,
             value,
@@ -43,7 +66,6 @@ export async function POST(
         });
 
         console.log('Document written with ID: ', city.id);
-
         return NextResponse.json(city);
     } catch (e) {
         console.error('Error adding document: ', e);
@@ -51,10 +73,7 @@ export async function POST(
     }
 }
 
-export async function GET(
-    req: Request,
-    { params }: { params: { id: string } }
-) {
+export async function GET(req: Request, { params }: { params: { storeId: string } }) {
     try {
         const { searchParams } = new URL(req.url);
 
@@ -64,15 +83,14 @@ export async function GET(
         // Dynamic filter function
         const filterCities = (cityData: any) => {
             for (const [key, value] of queryParamsArray) {
-                // Handle boolean parameters separately
-                if (key === 'isOffered') {
-                    // Convert query parameter value to boolean
-                    const queryValue = value === 'true';
+                if (key === 'price') {
+                    // Convert query parameter value to number
+                    const queryValue = Number(value);
                     if (cityData[key] !== queryValue) {
                         return false; // Skip if city does not match query parameter
                     }
                 } else {
-                    // For non-boolean parameters, check for partial match
+                    // For other parameters, check for partial match
                     if (!cityData[key]?.includes(value)) {
                         return false; // Skip if city does not match query parameter
                     }
@@ -81,39 +99,35 @@ export async function GET(
             return true; // Include city if it matches all query parameters
         };
 
-        const querySnapshot = await getDocs(collection(db, 'cities'));
+        // Firestore query to fetch cities
+        const citiesCollectionRef = collection(db, `stores/${params.storeId}/cities`);
+        const q = query(citiesCollectionRef, orderBy('createdAt', 'desc'));
+
+        const querySnapshot = await getDocs(q);
         const cities: any[] = [];
+
         querySnapshot.forEach((doc) => {
             const cityData = doc.data();
-            
+
             // Filter based on query parameters
             if (!filterCities(cityData)) {
                 return; // Skip if city does not match any query parameter
             }
 
-            const timestamp = cityData.createdAt;
-            const date = timestamp.toDate();
-            const month = date.toLocaleString('default', { month: 'long' });
-            const year = date.getFullYear();
-
-            const city = {
-                docId: doc.id,
+            cities.push({
                 id: doc.id,
-                ...cityData,
-                createdAt: `${month} ${year}`,
-                hasImage: cityData.url ? true : false,
-            };
-            cities.push(city);
+                name: cityData.name,
+                value: cityData.value,
+                url: cityData.url,
+                isOffered: cityData.isOffered,
+                createdAt: cityData.createdAt.toDate(), // Convert Firestore Timestamp to JavaScript Date
+                price: Number(cityData.price),
+            });
         });
 
-        // Log query parameters and filtered cities
-        //console.log('Query Parameters:', queryParamsArray);
-        //console.log('Filtered Cities:', cities);
-
         return NextResponse.json(cities);
-
     } catch (err) {
-        console.log(`[CITIES_GET] ${err}`);
-        return new NextResponse(`Internal error`, { status: 500 })
+        console.error('[GET_CITIES]', err);
+        return new NextResponse('Internal error', { status: 500 });
     }
 }

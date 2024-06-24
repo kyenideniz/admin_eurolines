@@ -89,12 +89,12 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
                 day: dayjs(data.day).toISOString(), // Convert day to Firestore-compatible format
             };
             if (initialData) {
-                await axios.patch(`/api/routes/${params.routeId}`, updatedData);
+                await axios.patch(`/api/${params.storeId}/routes/${params.routeId}`, updatedData);
             } else {
-                await axios.post(`/api/routes`, updatedData);
+                await axios.post(`/api/${params.storeId}/routes`, updatedData);
             }
             router.refresh();
-            router.push(`/routes`);
+            router.push(`${params.storeId}/routes`);
             toast.success(toastMessage);
         } catch (err) {
             toast.error("Something went wrong.");
@@ -106,9 +106,9 @@ export const RouteForm: React.FC<RouteFormProps> = ({ initialData, cities }) => 
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`/api/routes/${params.routeId}`);
+            await axios.delete(`/api/${params.storeId}/routes/${params.routeId}`);
             router.refresh();
-            router.push(`/routes`);
+            router.push(`/${params.storeId}/routes`);
             toast.success("Route deleted.");
         } catch (err) {
             toast.error("Make sure you removed all categories using this route first.");

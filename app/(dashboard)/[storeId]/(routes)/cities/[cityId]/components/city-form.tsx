@@ -92,13 +92,13 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
             }
 
             if (initialData) {
-                await axios.patch(`/api/cities/${params.cityId}`, formData);
+                await axios.patch(`/api/${params.storeId}/cities/${params.cityId}`, formData);
             } else {
-                await axios.post(`/api/cities`, formData);
+                await axios.post(`/api/${params.storeId}/cities`, formData);
             }
 
             router.refresh();
-            router.push(`/cities`);
+            router.push(`/${params.storeId}/cities`);
             toast.success(toastMessage);
         } catch (err) {
             toast.error("Something went wrong.");
@@ -110,9 +110,9 @@ export const CityForm: React.FC<SettingsFromProps> = ({ initialData }) => {
     const onDelete = async () => {
         try {
             setLoading(true);
-            await axios.delete(`/api/cities/${params.cityId}`);
+            await axios.delete(`/api/${params.storeId}/cities/${params.cityId}`);
             router.refresh();
-            router.push(`/cities`);
+            router.push(`/${params.storeId}/cities`);
             toast.success("City deleted.");
         } catch (err) {
             toast.error("Make sure you removed all categories using this city first.");

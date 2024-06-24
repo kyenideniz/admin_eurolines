@@ -22,22 +22,25 @@ import {
 } from "@/components/ui/table"
 import { Input } from "./input"
 import { useState } from "react"
+import { RefreshCw } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
   searchKey: string,
+  fetchClick: () => Promise<void>,
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  searchKey
+  searchKey,
+  fetchClick
 }: DataTableProps<TData, TValue>) {
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
-  const table = useReactTable({
+  
+  let table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -48,16 +51,19 @@ export function DataTable<TData, TValue>({
       columnFilters,
     }
   })
-
+  
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 gap-4">
         <Input
           placeholder="Search..."
           value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ""}
           onChange={event => table.getColumn(searchKey)?.setFilterValue(event.target.value)}
           className="max-w-sm"
-          />
+        />
+        <Button variant="outline" onClick={fetchClick}>
+            <RefreshCw className="w-4 h-4" />
+        </Button>
       </div>
       <div className="border rounded-md">
         <Table>

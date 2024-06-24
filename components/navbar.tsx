@@ -29,8 +29,6 @@ const Navbar = async () => {
           name: data.name,
       };
   });
-
-  console.log(formattedStores, "storedoc")
   
 
   return (

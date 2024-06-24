@@ -20,6 +20,14 @@ export interface City {
     isOffered: boolean;
     price?: number;
 }
+
+export interface CityFetch {
+    id: string
+    name: string
+    isOffered: string
+    hasImage: string
+    createdAt: string
+}
   
 export interface Stop {
     id: string;

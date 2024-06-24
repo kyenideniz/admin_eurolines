@@ -1,15 +1,14 @@
 import { db } from '@/firebaseConfig'
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc } from 'firebase/firestore';
 import { CityForm } from './components/city-form';
 
 export const revalidate = 0;
 
-const CityPage = async ({ params }: { params: { cityId: string } }) => {
+const CityPage = async ({ params }: { params: { cityId: string, storeId: string } }) => {
 
-    const cityDocRef = doc(db, 'cities', params.cityId);
+    const cityDocRef = doc(db, 'stores', params.storeId, 'cities', params.cityId);
     const cityDocSnapshot = await getDoc(cityDocRef);
     let formattedCity: any;
-
     if (cityDocSnapshot.exists()) {
         const cityData = cityDocSnapshot.data();
         formattedCity = {
